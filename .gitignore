@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+# Specialty files
+main.py
+test.py
+secrets.py
+.vscode
+.env
+
 # Distribution / packaging
 .Python
 build/
