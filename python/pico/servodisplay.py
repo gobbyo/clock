@@ -7,7 +7,7 @@ class servoDigitDisplay:
     switchpins = [9,10,11,12,13,14,15]
     extendAngles = [0,0,0,0,0,0,0]
     retractAngles = [90,90,90,90,90,90,90]
-    servospeed = 0.05
+    servospeed = 0.05 #default servo speed
     # 0 = 	0011 1111   0x3F
     # 1 =	0000 0110   0x06
     # 2 =	0101 1011   0x5B
@@ -25,7 +25,7 @@ class servoDigitDisplay:
     previousNumber = clearRegister
 
     def __init__(self):
-        print("servoDigitDisplay constructor")
+        #print("servoDigitDisplay constructor")
         for i in self.segpins:
             self.servos.append(sg90(i))
         for i in self.switchpins:
@@ -42,7 +42,7 @@ class servoDigitDisplay:
         self.switch[index].off()
 
     def extend(self,index):
-        print("extend {0}".format(index))
+        #print("extend {0}".format(index))
         i = self.retractAngles[index]
         self.switchOn(index)
         
@@ -58,7 +58,7 @@ class servoDigitDisplay:
         self.switchOff(index)
 
     def retract(self,index):
-        print("retract {0}".format(index))
+        #print("retract {0}".format(index))
         i = self.extendAngles[index]
         self.switchOn(index)
         while i <= self.retractAngles[index]:
@@ -90,8 +90,8 @@ class servoDigitDisplay:
         input = []
         input = self.getArray(self.segnum[val])
 
-        print("paintNumber {0}".format(input))
-        print("previousNumber {0}".format(self.previousNumber))
+        #print("paintNumber {0}".format(input))
+        #print("previousNumber {0}".format(self.previousNumber))
 
         for i in range(0,len(input)):
             if input[i] == 1:
