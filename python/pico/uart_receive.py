@@ -1,5 +1,10 @@
 from machine import UART, Pin, PWM
+from servodisplay import servoDigitDisplay
 import time
+
+extend = [5,10,10,10,0,20,20]
+retract = [100,110,110,110,95,120,115]
+servospeed = 0.05
 
 ledbrightness = int(65535/2)
 
@@ -8,26 +13,32 @@ def main():
     led = PWM(Pin(10))
     led.freq(1000)      # Set the frequency value
     
+    digit = servoDigitDisplay()
+    digit.servospeed = servospeed
+    digit.clearDisplay()
+
+    for i in range(0,7):
+        digit.extendAngles[i] = extend[i]
+        digit.retractAngles[i] = retract[i]
+    
     try:
-        uart = UART(1, baudrate[1], rx=Pin(9))
-        uart.init(baudrate[1], bits=8, parity=None, stop=1)
+        uart = UART(0, baudrate[0], rx=Pin(1))
+        uart.init(baudrate[0], bits=8, parity=None, stop=1)
         print("UART is configured as : ", uart)
         while True:
             if uart.any():
-                s = uart.readline().decode('utf-8')
-                print(s)
-                if s == 'High':
-                    led.duty_u16(ledbrightness) # Set the duty cycle, between 0-65535
-                else:
-                    led.duty_u16(0)
-            else:
-                pass
-            
-            time.sleep(.05)
+                b = bytearray('0', 'utf-8')
+                uart.readinto(b)
+                b = b.decode('utf-8')
+                n = int.from_bytes(b,'little',False) % 10
+                print("Number {0}".format(n))
+                digit.paintNumber(n)
+            time.sleep(3)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:
         led.duty_u16(0)
+        digit.__del__()
         print('Done')
 if __name__ == "__main__":
     main()

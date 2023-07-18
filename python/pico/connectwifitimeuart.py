@@ -28,6 +28,7 @@ def syncclock(rtc):
     rtc.datetime((int(z["year"]), int(z["month"]), int(z["day"]), 0, int(t[0]), int(t[1]), int(z["seconds"]), 0))
 
 def main():
+    baudrate = [9600, 19200, 38400, 57600, 115200]
     rtc = RTC()
     # set your WiFi Country
     rp2.country('US')
@@ -44,27 +45,31 @@ def main():
         print("connecting...")
         time.sleep(1)
 
+    #[year, month, day, weekday, hours, minutes, seconds, subseconds]
     syncclock(rtc)
-    uart = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))
-    uart.init(9600, bits=8, parity=None, stop=1)
-    print("UART is configured as : ", uart)
-
+    uart1 = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
+    uart1.init(baudrate[0], bits=8, parity=None, stop=1)
+    print("UART is configured as : ", uart1)
+    
     try:
         while True:
             j = json.dumps(rtc.datetime())
-            
+
             if(len(j) < 256):
-                b = bytearray(j, 'utf-8')
-                uart.write(b)
-                time.sleep(1)
-                if uart.any():
-                    uart.readinto(b)
-                    dt = b.decode('utf-8')
-                    #[year, month, day, weekday, hours, minutes, seconds, subseconds]
-                    print(dt)
-                    time.sleep(1)
+                print("seconds = {0}".format(rtc.datetime()[6]))
+                b = bytearray(str(rtc.datetime()[6] % 10), 'utf-8')
+                uart1.write(b)
+                
+                #b = bytearray(j, 'utf-8')
+                #uart1.write(b)
+                time.sleep(3)
+                #if uart1.any():
+                #    uart1.readinto(b)
+                #    dt = b.decode('utf-8')
+                #    print(dt)
+                #    time.sleep(1)
     except KeyboardInterrupt:
-        uart.deinit()
+        uart1.deinit()
         print('KeyboardInterrupt')
     finally:
         print('Done')
