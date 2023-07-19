@@ -9,6 +9,7 @@ servospeed = 0.01
 ledbrightness = int(65535/2)
 
 def main():
+    prev = 0
     baudrate = [9600, 19200, 38400, 57600, 115200]
     led = PWM(Pin(10))
     led.freq(1000)      # Set the frequency value
@@ -27,13 +28,17 @@ def main():
         print("UART is configured as : ", uart)
         while True:
             if uart.any():
-                b = bytearray('0', 'utf-8')
+                b = bytearray('00', 'utf-8')
                 uart.readinto(b)
-                b = b.decode('utf-8')
-                n = int.from_bytes(b,'little',False) % 10
-                print("Number {0}".format(n))
-                digit.paintNumber(n)
-            time.sleep(3)
+                try:
+                    n = int(b.decode('utf-8'))
+                    if prev != n:
+                        print("Number {0}".format(n))
+                        digit.paintNumber(n % 10)
+                        prev = n
+                finally:
+                    pass
+            time.sleep(1)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:

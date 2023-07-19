@@ -1,5 +1,5 @@
 from machine import Pin, RTC, UART
-import network, rp2, time
+import network, rp2
 import urequests
 import json
 import time
@@ -29,16 +29,15 @@ def syncclock(rtc):
 
 def main():
     baudrate = [9600, 19200, 38400, 57600, 115200]
+    txuartpins = [0,4,8,12]
+    uartdigits = []
     rtc = RTC()
     # set your WiFi Country
     rp2.country('US')
 
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-
-    # set power mode to get WiFi power-saving off (if needed)
     wlan.config(pm = 0xa11140)
-
     wlan.connect(secrets.ssid, secrets.pwd)
 
     while not wlan.isconnected() and wlan.status() >= 0:
@@ -47,31 +46,34 @@ def main():
 
     #[year, month, day, weekday, hours, minutes, seconds, subseconds]
     syncclock(rtc)
-    uart1 = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
-    uart1.init(baudrate[0], bits=8, parity=None, stop=1)
-    print("UART is configured as : ", uart1)
     
+    houruart = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
+    houruart.init(baudrate[0], bits=8, parity=None, stop=1)
+    minuteuart = UART(1, baudrate[0], tx=Pin(4), rx=Pin(5))
+    minuteuart.init(baudrate[0], bits=8, parity=None, stop=1)
+        
     try:
         while True:
             j = json.dumps(rtc.datetime())
 
             if(len(j) < 256):
-                print("seconds = {0}".format(rtc.datetime()[6]))
-                b = bytearray(str(rtc.datetime()[6] % 10), 'utf-8')
-                uart1.write(b)
-                
-                #b = bytearray(j, 'utf-8')
-                #uart1.write(b)
-                time.sleep(3)
-                #if uart1.any():
-                #    uart1.readinto(b)
-                #    dt = b.decode('utf-8')
-                #    print(dt)
-                #    time.sleep(1)
+                hours = "{0:02d}".format(rtc.datetime()[4])
+                minutes = "{0:02d}".format(rtc.datetime()[6])
+                print("Time: {0}:{1}".format(hours, minutes))
+                #b = bytearray(hours, 'utf-8')
+                b = bytearray(minutes, 'utf-8')
+                houruart.write(b)
+                print(b)
+                b = bytearray(hours, 'utf-8')
+                minuteuart.write(b)
+                print(b)
+                time.sleep(2.75)
+
     except KeyboardInterrupt:
-        uart1.deinit()
         print('KeyboardInterrupt')
     finally:
+        for i in uartdigits:
+            i.deinit()
         print('Done')
 
 if __name__ == "__main__":
