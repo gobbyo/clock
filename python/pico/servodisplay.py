@@ -1,11 +1,10 @@
-from machine import Pin, PWM
+from machine import Pin
 from servo import sg90
 import time
 
 class servoDigitDisplay:
-    segpins = [3,5,6,7,8,9,10] # a,b,c,d,e,f,g
-    switchpins = [11,12,13,14,15,16,17] # a,b,c,d,e,f,g
-    ledpins = [18,19,20,21,22,26,27] # a,b,c,d,e,f,g
+    segpins = [2,3,4,5,6,7,8] # a,b,c,d,e,f,g
+    switchpins = [9,10,11,12,13,14,15]
     extendAngles = [0,0,0,0,0,0,0]
     retractAngles = [90,90,90,90,90,90,90]
     servospeed = 0.05 #default servo speed

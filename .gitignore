@@ -12,6 +12,7 @@ test.py
 secrets.py
 .vscode
 .env
+.uf2
 
 # Distribution / packaging
 .Python
