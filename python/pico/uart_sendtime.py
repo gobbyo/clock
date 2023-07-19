@@ -1,4 +1,4 @@
-from machine import Pin, RTC, UART
+from machine import Pin, RTC, UART, PWM
 import network, rp2
 import urequests
 import json
@@ -29,11 +29,18 @@ def syncclock(rtc):
 
 def main():
     baudrate = [9600, 19200, 38400, 57600, 115200]
-    txuartpins = [0,4,8,12]
     uartdigits = []
     rtc = RTC()
     # set your WiFi Country
     rp2.country('US')
+
+    # Red LED indicates we're in the process of connecting to WiFi
+    red_led = PWM(Pin(27, Pin.OUT))
+    green_led = PWM(Pin(28, Pin.OUT))
+    red_led.freq(1000)
+    green_led.freq(1000)
+    green_led.duty_u16(0)
+    red_led.duty_u16(1000)
 
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -46,6 +53,9 @@ def main():
 
     #[year, month, day, weekday, hours, minutes, seconds, subseconds]
     syncclock(rtc)
+
+    green_led.duty_u16(1000)
+    red_led.duty_u16(0)
     
     uarttime = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
     uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
@@ -55,8 +65,9 @@ def main():
             j = json.dumps(rtc.datetime())
 
             if(len(j) < 256):
-                uarttime = "{0:02d}{1:02d}".format(rtc.datetime()[4], rtc.datetime()[5])
-                b = bytearray(uarttime, 'utf-8')
+                s = "{0:02d}{1:02d}".format(rtc.datetime()[4], rtc.datetime()[5])
+                print(s)
+                b = bytearray(s, 'utf-8')
                 uarttime.write(b)
                 time.sleep(5)
 
@@ -65,6 +76,8 @@ def main():
     finally:
         for i in uartdigits:
             i.deinit()
+        red_led.duty_u16(0)
+        green_led.duty_u16(0)
         print('Done')
 
 if __name__ == "__main__":

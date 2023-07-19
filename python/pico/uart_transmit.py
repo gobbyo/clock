@@ -12,12 +12,13 @@ def main():
         print("UART1 is configured as : ", uart1)
         print("UART2 is configured as : ", uart2)
         while True:
-            uart1.write('On')
-            uart2.write('High')
+            uart1.write(bytearray('On', 'utf-8'))
+            uart2.write(bytearray('High', 'utf-8'))
             led.on()
             time.sleep(1)
-            uart1.write('Off')
-            uart2.write('Low')
+
+            uart1.write(bytearray('Off', 'utf-8'))
+            uart2.write(bytearray('Low', 'utf-8'))
             led.off()
             time.sleep(1)
     except KeyboardInterrupt:
