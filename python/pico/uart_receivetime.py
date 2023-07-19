@@ -7,7 +7,7 @@ hour_ones = 1
 minute_tens = 2
 minute_ones = 3
 
-readnumerictime = minute_ones
+readnumerictime = minute_tens
 extend = [5,10,10,10,0,20,20]
 retract = [100,110,110,110,95,120,115]
 servospeed = 0.01
