@@ -2,6 +2,7 @@ from machine import UART, Pin, PWM
 from servodisplay import servoDigitDisplay
 import time
 
+readnumerictime = 3
 extend = [5,10,10,10,0,20,20]
 retract = [100,110,110,110,95,120,115]
 servospeed = 0.01
@@ -27,12 +28,11 @@ def main():
         print("UART is configured as : ", uart)
         while True:
             if uart.any():
-                b = bytearray('0', 'utf-8')
+                b = bytearray('0000', 'utf-8')
                 uart.readinto(b)
-                b = b.decode('utf-8')
-                n = int.from_bytes(b,'little',False) % 10
-                print("Number {0}".format(n))
-                digit.paintNumber(n)
+                t = b.decode('utf-8')
+                print("Number {0}".format(t[readnumerictime]))
+                digit.paintNumber(t[readnumerictime])
             time.sleep(3)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')

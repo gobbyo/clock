@@ -47,27 +47,18 @@ def main():
     #[year, month, day, weekday, hours, minutes, seconds, subseconds]
     syncclock(rtc)
     
-    houruart = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
-    houruart.init(baudrate[0], bits=8, parity=None, stop=1)
-    minuteuart = UART(1, baudrate[0], tx=Pin(4), rx=Pin(5))
-    minuteuart.init(baudrate[0], bits=8, parity=None, stop=1)
+    uarttime = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
+    uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
         
     try:
         while True:
             j = json.dumps(rtc.datetime())
 
             if(len(j) < 256):
-                hours = "{0:02d}".format(rtc.datetime()[4])
-                minutes = "{0:02d}".format(rtc.datetime()[6])
-                print("Time: {0}:{1}".format(hours, minutes))
-                #b = bytearray(hours, 'utf-8')
-                b = bytearray(minutes, 'utf-8')
-                houruart.write(b)
-                print(b)
-                b = bytearray(hours, 'utf-8')
-                minuteuart.write(b)
-                print(b)
-                time.sleep(2.75)
+                uarttime = "{0:02d}{1:02d}".format(rtc.datetime()[4], rtc.datetime()[5])
+                b = bytearray(uarttime, 'utf-8')
+                uarttime.write(b)
+                time.sleep(5)
 
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
