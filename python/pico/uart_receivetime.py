@@ -7,17 +7,18 @@ hour_ones = 1
 minute_tens = 2
 minute_ones = 3
 
-readnumerictime = minute_tens
+readnumerictime = minute_ones
 extend = [5,10,10,10,0,20,20]
 retract = [100,110,110,110,95,120,115]
-servospeed = 0.01
+servospeed = 0.02
+LED_pin = 10
 
 ledbrightness = int(65535/2)
 
 def main():
     prev = -1
     baudrate = [9600, 19200, 38400, 57600, 115200]
-    led = PWM(Pin(10))
+    led = PWM(Pin(LED_pin))
     led.freq(1000)      # Set the frequency value
     
     digit = servoDigitDisplay()
@@ -37,11 +38,20 @@ def main():
                 uart.readinto(b)
                 t = b.decode('utf-8')
                 print(t)
-                n = int(t[readnumerictime])
-                if prev != n:
-                    print("paintNumber {0}".format(n))
-                    digit.paintNumber(n)
-                    prev = n
+                if (len(t) == 4):
+                    if t.isdigit():
+                        n = int(t[readnumerictime])
+                        if prev != n:
+                            print("paintNumber {0}".format(n))
+                            digit.paintNumber(n)
+                            prev = n
+                    if t.isalpha():
+                        code = t[readnumerictime]
+                        print("code {0}".format(code))
+                        if code == 'c':
+                            digit.clearDisplay()
+                        if code == 't':
+                            digit.testServos()
             time.sleep(3)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')

@@ -9,6 +9,14 @@ def main():
     baudrate = [9600, 19200, 38400, 57600, 115200]
     uarttime = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
     uarttime.init(baudrate[0], bits=8, parity=None, stop=1)  
+    b = bytearray('cccc', 'utf-8')
+    print(b)
+    uarttime.write(b)
+    time.sleep(5)
+    b = bytearray('ccct', 'utf-8')
+    print(b)
+    uarttime.write(b)
+    time.sleep(15)
 
     i = 0
     sync = syncRTC.syncRTC()
@@ -21,7 +29,7 @@ def main():
     while not sync.syncclock():
         time.sleep(5)
         if i > maxAttempts:
-            raise Exception("Unable to connect to WiFi")
+            raise Exception("Failed to call web APIs")
         i += 1
 
     try:

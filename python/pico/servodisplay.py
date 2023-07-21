@@ -3,8 +3,9 @@ from servo import sg90
 import time
 
 class servoDigitDisplay:
-    segpins = [2,3,4,5,6,7,8] # a,b,c,d,e,f,g
-    switchpins = [9,10,11,12,13,14,15]
+    segpins = [2,3,6,7,8,9,10] # a,b,c,d,e,f,g
+    switchpins = [11,12,13,14,15,16,17]
+    ledpins = [18,19,20,21,22,26,27]
     extendAngles = [0,0,0,0,0,0,0]
     retractAngles = [90,90,90,90,90,90,90]
     servospeed = 0.05 #default servo speed
@@ -102,3 +103,17 @@ class servoDigitDisplay:
                     self.retract(i)
         
         self.previousNumber = input
+    
+    def testServos(self):
+        print("testServos")
+        dance = [0,1,6,4,3,2,6,5,0]
+        i = 0
+        self.extend(dance[i])
+        while i in dance:
+            if i < len(dance):
+                self.extend(dance[i+1])        
+                print("extend {0}".format(i))
+            self.retract(dance[i])
+            print("retract {0}".format(i))
+            i += 1
+        self.retract(dance[i])
