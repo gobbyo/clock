@@ -8,15 +8,7 @@ maxAttempts = 3
 def main():
     baudrate = [9600, 19200, 38400, 57600, 115200]
     uarttime = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
-    uarttime.init(baudrate[0], bits=8, parity=None, stop=1)  
-    b = bytearray('cccc', 'utf-8')
-    print(b)
-    uarttime.write(b)
-    time.sleep(5)
-    b = bytearray('ccct', 'utf-8')
-    print(b)
-    uarttime.write(b)
-    time.sleep(15)
+    uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
 
     i = 0
     sync = syncRTC.syncRTC()
