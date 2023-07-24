@@ -7,11 +7,15 @@ hour_ones = 1
 minute_tens = 2
 minute_ones = 3
 
-readnumerictime = minute_ones
-extend = [5,10,10,10,0,20,20]
-retract = [100,110,110,110,95,120,115]
-servospeed = 0.02
+#change this to hour_tens, hour_ones, minute_tens, or minute_ones
+readnumerictime = minute_ones 
+#change these values to match your servo's extend angles
+extend = [5,10,10,10,0,20,20] 
+#change these values to match your servo's retract angles
+retract = [100,110,110,110,95,120,115]  
+servospeed = 0.01
 LED_pin = 10
+uartsignalpausetime = 3 #seconds
 
 ledbrightness = int(65535/2)
 
@@ -37,7 +41,7 @@ def main():
                 b = bytearray('0000', 'utf-8')
                 uart.readinto(b)
                 t = b.decode('utf-8')
-                print(t)
+                print("raw decode = {0}".format(t))
                 if (len(t) == 4):
                     if t.isdigit():
                         n = int(t[readnumerictime])
@@ -52,7 +56,7 @@ def main():
                             digit.clearDisplay()
                         if code == 't':
                             digit.testServos()
-            time.sleep(3)
+            time.sleep(uartsignalpausetime)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:

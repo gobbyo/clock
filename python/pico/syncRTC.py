@@ -70,9 +70,6 @@ class syncRTC:
             while not wlan.isconnected() and wlan.status() >= 0:
                 print("connecting...")
                 time.sleep(1)
-                self.red_led.duty_u16(0)
-                time.sleep(1)
-                self.red_led.duty_u16(self.ledlumins)
 
         except:
             print("Unable to connect to WiFi")
@@ -83,7 +80,7 @@ class syncRTC:
                 print(wlan.ifconfig())
                 self.green_led.duty_u16(self.ledlumins)
                 time.sleep(1)
-                self.red_led.duty_u16(self.ledlumins)
+                self.red_led.duty_u16(0)
                 self.green_led.duty_u16(0)
                 return True
             else:

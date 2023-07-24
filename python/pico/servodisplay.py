@@ -79,20 +79,17 @@ class servoDigitDisplay:
         for s in a:
             a[i] = (val & (0x01 << i)) >> i
             i += 1
-        #print("getArray {0}".format(a))
         return a
 
     def clearDisplay(self):
         for i in range(0,8):
             if self.previousNumber[i] == 1:
                 self.retract(i)
+                time.sleep(self.servospeed)
     
     def paintNumber(self,val):
         input = []
         input = self.getArray(self.segnum[val])
-
-        #print("paintNumber {0}".format(input))
-        #print("previousNumber {0}".format(self.previousNumber))
 
         for i in range(0,len(input)):
             if input[i] == 1:
