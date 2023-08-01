@@ -40,20 +40,19 @@ def main():
                 uart.readinto(b)
                 t = b.decode('utf-8')
                 print("raw decode = {0}".format(t))
-                if (len(t) == 4):
-                    if t.isdigit():
-                        n = int(t[readnumerictime])
-                        if prev != n:
-                            print("paintNumber {0}".format(n))
-                            digit.paintNumber(n)
-                            prev = n
-                    if t.isalpha():
-                        code = t[readnumerictime]
-                        print("code {0}".format(code))
-                        if code == 'c':
-                            digit.clearDisplay()
-                        if code == 't':
-                            digit.testServos()
+                if t.isdigit():
+                    n = int(t[readnumerictime])
+                    if prev != n:
+                        print("paintNumber {0}".format(n))
+                        digit.paintNumber(n)
+                        prev = n
+                if t.isalpha():
+                    code = t[readnumerictime]
+                    print("code {0}".format(code))
+                    if code == 'c':
+                        digit.clearDisplay()
+                    if code == 't':
+                        digit.testServos()
             time.sleep(uartsignalpausetime)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
