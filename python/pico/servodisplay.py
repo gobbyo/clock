@@ -9,6 +9,7 @@ class servoDigitDisplay:
     _extendAngles = [0,0,0,0,0,0,0]
     _retractAngles = [90,90,90,90,90,90,90]
     _servospeed = 0.05 #default servo speed
+    _servowait = 0.2
     # 0 = 	0011 1111   0x3F
     # 1 =	0000 0110   0x06
     # 2 =	0101 1011   0x5B
@@ -54,7 +55,7 @@ class servoDigitDisplay:
         #    i -= 5
         
         self._servos[index].move(self._extendAngles[index])
-        time.sleep(.2)
+        time.sleep(self._servowait)
         self._switches[index].off()
         self._leds[index].on()
 
@@ -70,7 +71,7 @@ class servoDigitDisplay:
         #    i += 5
         
         self._servos[index].move(self._retractAngles[index])
-        time.sleep(.2)
+        time.sleep(self._servowait)
         self._switches[index].off()
 
     def getArray(self,val):
