@@ -47,13 +47,6 @@ class servoDigitDisplay:
         #print("extend {0}".format(index))
         i = self._retractAngles[index]
         self._switches[index].on()
-
-        #while i >= self._extendAngles[index]:
-            #print("angle = {0}".format(i))
-        #    self._servos[index].move(i)
-        #    time.sleep(self._servospeed)
-        #    i -= 5
-        
         self._servos[index].move(self._extendAngles[index])
         time.sleep(self._servowait)
         self._switches[index].off()
@@ -63,13 +56,7 @@ class servoDigitDisplay:
         #print("retract {0}".format(index))
         self._leds[index].off()
         i = self._extendAngles[index]
-        self._switches[index].on()
-        #while i <= self._retractAngles[index]:
-            #print("angle = {0}".format(i))
-        #    self._servos[index].move(i)
-        #    time.sleep(self._servospeed)
-        #    i += 5
-        
+        self._switches[index].on() 
         self._servos[index].move(self._retractAngles[index])
         time.sleep(self._servowait)
         self._switches[index].off()
