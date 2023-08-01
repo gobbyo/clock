@@ -8,8 +8,8 @@ class servoDigitDisplay:
     _ledpins = [18,19,20,21,22,26,27]
     _extendAngles = [0,0,0,0,0,0,0]
     _retractAngles = [90,90,90,90,90,90,90]
-    _servospeed = 0.05 #default servo speed
-    _servowait = 0.2
+    _servospeed = 0.5 #default servo speed
+    _servowait = 0.4
     # 0 = 	0011 1111   0x3F
     # 1 =	0000 0110   0x06
     # 2 =	0101 1011   0x5B
@@ -100,7 +100,7 @@ class servoDigitDisplay:
             if input[i] == 0:
                 if self._previousNumber[i] == 1:
                     self.retract(i)
-            time.sleep(self._servospeed)
+            #time.sleep(self._servowait)
 
         self._previousNumber = input
     
