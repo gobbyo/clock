@@ -5,10 +5,25 @@ import time
 
 maxAttempts = 3
 
+def testsegments(uarttime):
+    for i in range(0,10):
+        s = "{0:02d}{1:02d}".format(0,i)
+        print(s)
+        b = bytearray(s, 'utf-8')
+        uarttime.write(b)
+        time.sleep(3)
+
+    b = bytearray("cccc", 'utf-8')
+    uarttime.write(b)
+    time.sleep(7)
+
 def main():
     baudrate = [9600, 19200, 38400, 57600, 115200]
     uarttime = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
     uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
+
+    while True:
+        testsegments(uarttime)
 
     i = 0
     sync = syncRTC.syncRTC()

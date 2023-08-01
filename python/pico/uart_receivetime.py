@@ -10,28 +10,23 @@ minute_ones = 3
 #change this to hour_tens, hour_ones, minute_tens, or minute_ones
 readnumerictime = minute_ones 
 #change these values to match your servo's extend angles
-extend = [5,10,10,10,0,20,20] 
+extend = [5,10,10,15,10,20,20] 
 #change these values to match your servo's retract angles
-retract = [100,110,110,110,95,120,115]  
+retract = [110,110,110,110,110,120,125]  
 servospeed = 0.01
-LED_pin = 10
-uartsignalpausetime = 3 #seconds
-
-ledbrightness = int(65535/2)
+uartsignalpausetime = 0.1 #seconds
 
 def main():
     prev = -1
     baudrate = [9600, 19200, 38400, 57600, 115200]
-    led = PWM(Pin(LED_pin))
-    led.freq(1000)      # Set the frequency value
     
     digit = servoDigitDisplay()
-    digit.servospeed = servospeed
+    digit._servospeed = servospeed
     digit.clearDisplay()
 
     for i in range(0,7):
-        digit.extendAngles[i] = extend[i]
-        digit.retractAngles[i] = retract[i]
+        digit._extendAngles[i] = extend[i]
+        digit._retractAngles[i] = retract[i]
     
     try:
         uart = UART(0, baudrate[0], rx=Pin(1))
@@ -60,7 +55,6 @@ def main():
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:
-        led.duty_u16(0)
         digit.__del__()
         print('Done')
 if __name__ == "__main__":
