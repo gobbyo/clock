@@ -10,12 +10,15 @@ minute_ones = 3
 #change this to hour_tens, hour_ones, minute_tens, or minute_ones
 readnumerictime = minute_ones 
 #change these values to match your servo's extend angles
+#0 is fully extended
 extend = [5,10,10,15,10,20,20] 
 #change these values to match your servo's retract angles
+#90 is the default retraction
 retract = [110,110,110,110,110,120,125]  
 servospeed = 0.01
 uartsignalpausetime = 0.1 #seconds
 
+#note for this to work, the picos must have common ground
 def main():
     prev = -1
     baudrate = [9600, 19200, 38400, 57600, 115200]
