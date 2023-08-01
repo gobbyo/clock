@@ -19,59 +19,59 @@ class servoDigitDisplay:
     # 7 =	0000 0111   0x07
     # 8 =   0111 1111   0x7F
     # 9 =   0110 0111   0x67
-    segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
-    servos = []
-    switches = []
-    leds = []
-    clearRegister = [0,0,0,0,0,0,0,0]
-    previousNumber = clearRegister
+    _segnum = [0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x67]
+    _servos = []
+    _switches = []
+    _leds = []
+    _clearRegister = [0,0,0,0,0,0,0,0]
+    _previousNumber = _clearRegister
 
     def __init__(self):
         #print("servoDigitDisplay constructor")
         for i in self._segpins:
-            self.servos.append(sg90(i))
+            self._servos.append(sg90(i))
         for i in self._switchpins:
-            self.switches.append(Pin(i, Pin.OUT))
+            self._switches.append(Pin(i, Pin.OUT))
         for i in range(0,len(self._ledpins)):
-            self.leds.append(Pin(self._ledpins[i], Pin.OUT))
-            self.leds[i].off()
+            self._leds.append(Pin(self._ledpins[i], Pin.OUT))
+            self._leds[i].off()
 
     def __del__(self):
         self.clearDisplay()
-        for led in self.leds:
+        for led in self._leds:
             led.off()
         print("servoDigitDisplay destructor")
 
     def extend(self,index):
         #print("extend {0}".format(index))
         i = self._retractAngles[index]
-        self.switches[index].on()
+        self._switches[index].on()
 
         #while i >= self._extendAngles[index]:
             #print("angle = {0}".format(i))
-        #    self.servos[index].move(i)
+        #    self._servos[index].move(i)
         #    time.sleep(self._servospeed)
         #    i -= 5
         
-        self.servos[index].move(self._extendAngles[index])
+        self._servos[index].move(self._extendAngles[index])
         time.sleep(.2)
-        self.switches[index].off()
-        self.leds[index].on()
+        self._switches[index].off()
+        self._leds[index].on()
 
     def retract(self,index):
         #print("retract {0}".format(index))
-        self.leds[index].off()
+        self._leds[index].off()
         i = self._extendAngles[index]
-        self.switches[index].on()
+        self._switches[index].on()
         #while i <= self._retractAngles[index]:
             #print("angle = {0}".format(i))
-        #    self.servos[index].move(i)
+        #    self._servos[index].move(i)
         #    time.sleep(self._servospeed)
         #    i += 5
         
-        self.servos[index].move(self._retractAngles[index])
+        self._servos[index].move(self._retractAngles[index])
         time.sleep(.2)
-        self.switches[index].off()
+        self._switches[index].off()
 
     def getArray(self,val):
         a = [0,0,0,0,0,0,0,0]
@@ -83,25 +83,25 @@ class servoDigitDisplay:
 
     def clearDisplay(self):
         for i in range(0,7):
-            if self.previousNumber[i] == 1:
+            if self._previousNumber[i] == 1:
                 self.retract(i)
                 time.sleep(self._servospeed)
-        self.previousNumber = self.clearRegister
+        self._previousNumber = self._clearRegister
     
     def paintNumber(self,val):
         input = []
-        input = self.getArray(self.segnum[val])
+        input = self.getArray(self._segnum[val])
 
         for i in range(0,len(input)):
             if input[i] == 1:
-                if self.previousNumber[i] == 0:
+                if self._previousNumber[i] == 0:
                     self.extend(i)               
             if input[i] == 0:
-                if self.previousNumber[i] == 1:
+                if self._previousNumber[i] == 1:
                     self.retract(i)
             time.sleep(self._servospeed)
-            
-        self.previousNumber = input
+
+        self._previousNumber = input
     
     def testServos(self):
         print("testServos")
