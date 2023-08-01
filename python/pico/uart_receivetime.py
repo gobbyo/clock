@@ -18,7 +18,7 @@ retract = [110,110,110,110,110,120,125]
 servospeed = 0.01
 uartsignalpausetime = 0.1 #seconds
 
-#note for this to work, the picos must have common ground
+#picos must have common ground for uart to work
 def main():
     prev = -1
     baudrate = [9600, 19200, 38400, 57600, 115200]

@@ -1,7 +1,7 @@
 from machine import UART, Pin
 import time
 
-#note for this to work, the picos must have common ground
+#picos must have common ground for uart to work
 def main():
     baudrate = [9600, 19200, 38400, 57600, 115200]
     
