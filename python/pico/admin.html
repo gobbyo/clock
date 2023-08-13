@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>Analog Clock Controls Settings</h1>
+        <h2>WIFI</h2>
+        <p>name: <input type="text" id="ssid" value="wifi name"></p>
+        <p>password: <input type="password" id="pwd" value="password"></p>
+        <p><input type=checkbox id="restart" checked> restart upon submission</p>
+
+        <h2>Features</h2>
+        <form onsubmit="go()" method="get"></form>
+            <p><input type=checkbox id="temp" checked> display temperature</p>
+            <p><input type=checkbox id="humid" checked> display humidity</p>
+
+            <p><button type="button" onclick="buildurl()">Generate URL</button></p>
+            <p id="settings"></p>
+          </form>
+        <script>
+        function buildurl() {
+            var ssid = document.getElementById("ssid").value;
+            var pwd = document.getElementById("pwd").value;
+            var restart = document.getElementById("restart").checked;
+            if (restart == true) {
+                restart = "on";
+            } else {
+                restart = "off";
+            }
+            var temp = document.getElementById("temp").checked;
+            if (temp == true) {
+                temp = "on";
+            } else {
+                temp = "off";
+            }
+            var humid = document.getElementById("humid").checked;
+            if (humid == true) {
+                humid = "on";
+            } else {
+                humid = "off";
+            }
+            var query = "ssid=" + ssid + ";pwd=" + pwd + ";temp=" + temp + ";humid=" + humid + ";restart=" + restart;
+            var url = "http://192.168.4.1/";
+            document.getElementById("settings").innerHTML = url;
+            document.forms[0].action = url + query;
+            document.forms[0].submit();
+        }
+        </script>
+        </input>
+    </body>
+</html>

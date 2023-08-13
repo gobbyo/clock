@@ -1,8 +1,8 @@
 from servodisplay import servoDigitDisplay
 import time
 
-extend = [5,10,10,10,0,20,20]
-retract = [100,110,110,110,95,120,115]
+extend = [5,5,5,10,10,5,30]
+retract = [100,105,110,110,110,120,125]
 servospeed = 0.05
 
 def main():
@@ -10,9 +10,8 @@ def main():
     digit.servospeed = servospeed
 
     for i in range(0,7):
-        digit.extendAngles[i] = extend[i]
-        digit.retractAngles[i] = retract[i]
-
+        digit._extendAngles[i] = extend[i]
+        digit._retractAngles[i] = retract[i]
     try:
         while True:
             for i in range(0,10):

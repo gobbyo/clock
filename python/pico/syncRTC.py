@@ -65,6 +65,7 @@ class syncRTC:
             wlan = network.WLAN(network.STA_IF)
             wlan.active(True)
             wlan.config(pm = 0xa11140)
+            #print("Connecting to WiFi, ssid={0}, pwd={1}".format(secrets.ssid, secrets.pwd))
             wlan.connect(secrets.ssid, secrets.pwd)
 
             while not wlan.isconnected() and wlan.status() >= 0:

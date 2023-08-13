@@ -1,4 +1,5 @@
 import syncRTC
+import hotspot
 from machine import Pin, UART
 import json
 import time
@@ -11,7 +12,7 @@ def testsegments(uarttime):
         print(s)
         b = bytearray(s, 'utf-8')
         uarttime.write(b)
-        time.sleep(3)
+        time.sleep(5)
 
     b = bytearray("cccc", 'utf-8')
     uarttime.write(b)
@@ -22,7 +23,8 @@ def main():
     uarttime = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
     uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
 
-    testsegments(uarttime)
+    wifi = hotspot.hotspot("picowclock","12pclock")
+    wifi.run()
 
     i = 0
     sync = syncRTC.syncRTC()

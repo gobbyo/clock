@@ -3,9 +3,9 @@ from servo import sg90
 import time
 
 class servoDigitDisplay:
-    _segpins = [2,3,6,7,8,9,10] # a,b,c,d,e,f,g
-    _switchpins = [11,12,13,14,15,16,17]
-    _ledpins = [18,19,20,21,22,26,27]
+    _segpins = [2,3,4,5,6,7,8] # a,b,c,d,e,f,g
+    _switchpins = [9,10,11,12,13,14,15]
+    _ledpins = [16,17,18,19,20,21,22]
     _extendAngles = [0,0,0,0,0,0,0]
     _retractAngles = [90,90,90,90,90,90,90]
     _servospeed = 0.5 #default servo speed
@@ -44,7 +44,7 @@ class servoDigitDisplay:
         print("servoDigitDisplay destructor")
 
     def extend(self,index):
-        #print("extend {0}".format(index))
+        print("extend {0}".format(index))
         i = self._retractAngles[index]
         self._switches[index].on()
         self._servos[index].move(self._extendAngles[index])
@@ -53,7 +53,7 @@ class servoDigitDisplay:
         self._leds[index].on()
 
     def retract(self,index):
-        #print("retract {0}".format(index))
+        print("retract {0}".format(index))
         self._leds[index].off()
         i = self._extendAngles[index]
         self._switches[index].on() 
@@ -94,7 +94,7 @@ class servoDigitDisplay:
     def testServos(self):
         print("testServos")
         self.clearDisplay()
-        seg_sequence = [0,1,6,4,3,2,6,5,0]
+        seg_sequence = [0,1,2,3,4,5,6]
         i = 0
         self.extend(seg_sequence[i])
         while i in seg_sequence:
