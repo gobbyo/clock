@@ -11,10 +11,10 @@ minute_ones = 3
 readnumerictime = minute_ones 
 #change these values to match your servo's extend angles
 #0 is fully extended
-extend = [5,5,5,10,10,5,30] 
+extend = [5,5,5,0,10,5,30] 
 #change these values to match your servo's retract angles
 #90 is the default retraction
-retract = [100,105,110,110,110,120,125]  
+retract = [110,105,110,115,110,120,125]  
 servospeed = 0.01
 uartsignalpausetime = 0.1 #seconds
 

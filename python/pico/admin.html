@@ -3,6 +3,7 @@
     <body>
         <h1>Analog Clock Controls Settings</h1>
         <h2>WIFI</h2>
+        <p id="url">hotspot url</p>
         <p>name: <input type="text" id="ssid" value="wifi name"></p>
         <p>password: <input type="password" id="pwd" value="password"></p>
         <p><input type=checkbox id="restart" checked> restart upon submission</p>
@@ -17,6 +18,7 @@
           </form>
         <script>
         function buildurl() {
+            var url = document.getElementById("url").value;
             var ssid = document.getElementById("ssid").value;
             var pwd = document.getElementById("pwd").value;
             var restart = document.getElementById("restart").checked;
@@ -38,7 +40,6 @@
                 humid = "off";
             }
             var query = "ssid=" + ssid + ";pwd=" + pwd + ";temp=" + temp + ";humid=" + humid + ";restart=" + restart;
-            var url = "http://192.168.4.1/";
             document.getElementById("settings").innerHTML = url;
             document.forms[0].action = url + query;
             document.forms[0].submit();

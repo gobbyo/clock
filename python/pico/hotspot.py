@@ -22,10 +22,19 @@ class hotspot:
         machine.reset() #reset to avoid OSError: [Errno 98] EADDRINUSE
     
     def _web_page(self):
-      with uio.open(self.adminwebpage, 'r') as f:
-        test = f.read()
+        page = ""
+        line = ""
+        with uio.open(self.adminwebpage, 'r') as f:
+            while True:
+                line = f.readline()
+                print(line)
+                if not line:
+                    break
+                if line.find('<p id="url">') > 0:
+                        line = '        <p id="url">hotspot address: ' + self.url + '</p>'  
+                page += line
         f.close()
-      return test
+        return page
 
     def _parseRequest(self,request):
         print("_parseRequest()")
@@ -53,6 +62,7 @@ class hotspot:
         return evalResponse
     
     def run(self):
+        print('Clock Hotspot is starting')
         evalResponse = True
         gc.collect()
 
@@ -61,11 +71,16 @@ class hotspot:
         wifi.config(essid=self.hotspotssid,password=self.hotspotpassword,channel=self.channel)
         wifi.ifconfig([self.url, '255.255.255.0', self.url, '0.0.0.0'])
         wifi.active(True)
+        i = 0
         while wifi.active() == False:
+            time.sleep(1)
+            i += 1
+            print("Waiting for WiFi AP to be active, attempt {0}".format(i))
             pass
 
         print('Clock Hotspot is active')
         print(wifi.ifconfig())
+        self.url = wifi.ifconfig()[0]
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   #creating socket object
         s.bind((self.url, 80))

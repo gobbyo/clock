@@ -23,15 +23,15 @@ def main():
     uarttime = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
     uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
 
-    wifi = hotspot.hotspot("picowclock","12pclock")
-    wifi.run()
-
     i = 0
     sync = syncRTC.syncRTC()
     while not sync.connectWiFi():
         time.sleep(5)
         if i > maxAttempts:
-            raise Exception("Unable to connect to WiFi")
+            print("Unable to connect to WiFi")  
+            wifi = hotspot.hotspot("picowclock","12oclock")
+            wifi.run()
+            i = 0
         i += 1
 
     while not sync.syncclock():
