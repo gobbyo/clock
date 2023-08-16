@@ -2,20 +2,20 @@
 <html>
     <body>
         <h1>Analog Clock Controls Settings</h1>
+        <p id="url" value="">hotspot url</p>
         <h2>WIFI</h2>
-        <p id="url">hotspot url</p>
-        <p>name: <input type="text" id="ssid" value="wifi name"></p>
-        <p>password: <input type="password" id="pwd" value="password"></p>
-        <p><input type=checkbox id="restart" checked> restart upon submission</p>
+            <form onsubmit="go()" method="get"></form>
+                <p>name: <input type="text" id="ssid" value="wifi name"></p>
+                <p>password: <input type="password" id="pwd" value="password"></p>
+                <p><input type=checkbox id="restart" checked> restart upon submission</p>
+                
+                <h2>Features</h2>
 
-        <h2>Features</h2>
-        <form onsubmit="go()" method="get"></form>
-            <p><input type=checkbox id="temp" checked> display temperature</p>
-            <p><input type=checkbox id="humid" checked> display humidity</p>
+                <p><input type=checkbox id="temp" checked> display temperature</p>
+                <p><input type=checkbox id="humid" checked> display humidity</p>
 
-            <p><button type="button" onclick="buildurl()">Generate URL</button></p>
-            <p id="settings"></p>
-          </form>
+                <p><button type="button" onclick="buildurl()">Submit</button></p>
+            </form>
         <script>
         function buildurl() {
             var url = document.getElementById("url").value;
@@ -40,7 +40,7 @@
                 humid = "off";
             }
             var query = "ssid=" + ssid + ";pwd=" + pwd + ";temp=" + temp + ";humid=" + humid + ";restart=" + restart;
-            document.getElementById("settings").innerHTML = url;
+            
             document.forms[0].action = url + query;
             document.forms[0].submit();
         }

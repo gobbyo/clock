@@ -15,11 +15,13 @@ class hotspot:
         self.hotspotpassword = password      #Set your access point password
         self.adminwebpage = 'admin.html'
         self.channel = 11
+        self.ssid = "ssid"
+        self.pwd = "pwd"
 
     def __del__(self):
         print("__del__()")
         time.sleep(1)
-        machine.reset() #reset to avoid OSError: [Errno 98] EADDRINUSE
+        #machine.reset() #reset to avoid OSError: [Errno 98] EADDRINUSE
     
     def _web_page(self):
         page = ""
@@ -27,11 +29,10 @@ class hotspot:
         with uio.open(self.adminwebpage, 'r') as f:
             while True:
                 line = f.readline()
-                print(line)
                 if not line:
                     break
-                if line.find('<p id="url">') > 0:
-                        line = '        <p id="url">hotspot address: ' + self.url + '</p>'  
+                if line.find('<p id="url"') > 0:
+                        line = '        <p id="url" value="' + self.url + '" >hotspot address: ' + self.url + '</p>'  
                 page += line
         f.close()
         return page
@@ -40,23 +41,28 @@ class hotspot:
         print("_parseRequest()")
         evalResponse = True
         lines = request.split('\r\n')
+        #titles=['ssid','pwd','temp','humid','restart']
         for i in lines:
             if i.find('Referer:') == 0:
                 query = i.split('http://' + self.url + '/')
                 if len(query) > 1:
-                    #['ssid=wifi','pwd=password','temp=on','humid=on','restart=on']
                     values = query[1].split(';')
-                    print("write to secrets.py: {0}".format(values))
-                    with uio.open('secrets.py', 'w') as f:         
+                    with uio.open('config.py', 'w') as f:         
                         for v in values:
                             t = v.split('=')
                             if len(t) > 1:
-                                if v.find('restart=') == 0:
-                                    restart = v.split('=')[1]
-                                    if restart.find('on') == 0:
+                                if t[0].find('restart') >= 0:
+                                    if t[1].find('on') >= 0:
                                         evalResponse = False
+                                if t[0].find('ssid') >= 0:
+                                    self.ssid = t[1]
+                                    #f.write('ssid="' + t[1] + '"\n')
+                                if t[0].find('pwd') >= 0:
+                                    self.pwd = t[1]
+                                    #f.write('pwd="' + t[1] + '"\n')
                                 else:
                                     f.write(t[0] + '="' + t[1] + '"\n')
+                                    print("writing to config.py: {0}={1}".format(t[0],t[1]))
                         f.flush()
                         f.close()
         return evalResponse
@@ -68,7 +74,7 @@ class hotspot:
 
         # open soft wifi api mode
         wifi = network.WLAN(network.AP_IF)
-        wifi.config(essid=self.hotspotssid,password=self.hotspotpassword,channel=self.channel)
+        wifi.config(essid=self.hotspotssid,password=self.hotspotpassword,channel=self.channel,pm = 0xa11140)
         wifi.ifconfig([self.url, '255.255.255.0', self.url, '0.0.0.0'])
         wifi.active(True)
         i = 0
@@ -89,7 +95,7 @@ class hotspot:
             conn, addr = s.accept()
             print('Got a connection from %s' % str(addr))
             request = conn.recv(1024).decode('utf-8')
-            #print('Content = %s' % str(request))
+            print('Content = %s' % str(request))
             evalResponse = self._parseRequest(request)
             response = self._web_page()
             conn.send(response)

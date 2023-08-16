@@ -2,26 +2,19 @@ import uos
 import uio
 
 def main():
-    print(uos.listdir())
-    #with uio.open('test.txt', 'w') as f:
-    #    f.write('"Hello World"')
-    #    f.close()
-
-    #print(uos.stat('test.txt'))
-    #print("file len = {0}".format(uos.stat('test.txt')[6]))
-
-    with uio.open('admin.html', 'r') as f:
-        page = ""
-        line = ""
-        while True:
-            line = f.readline()
-            if not line:
-                break
-            if line.find('<input type="text" id="url" value=>') > 0:
-                line = '            <p><input type="text" id="url" value="' + "192.148.4.1" + '"> URL to hotspot</p>\n'
-            page += line
-        f.close()
-        print(page)
+    evalResponse = True
+    values=['undefinedssid=Clipper', 'pwd=Orcatini', 'temp=on', 'humid=on', 'restart=on?']
+    for v in values:
+        t = v.split('=')
+        print(t)
+        if t[0].find('restart') == 0:
+            if t[1].find('on') == 0:
+                evalResponse = False
+                print("evalResponse = False")
+        if t[0].find('undefinedssid') == 0:
+            print('ssid="' + t[1] + '"\n')
+        else:
+            print(t[0] + '="' + t[1] + '"\n')
     
     #uos.remove('test.txt')
 

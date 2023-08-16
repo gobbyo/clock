@@ -11,12 +11,12 @@ minute_ones = 3
 readnumerictime = minute_ones 
 #change these values to match your servo's extend angles
 #0 is fully extended
-extend = [5,5,5,0,10,5,30] 
+extend = [5,5,5,10,10,5,30] 
 #change these values to match your servo's retract angles
 #90 is the default retraction
 retract = [110,105,110,115,110,120,125]  
 servospeed = 0.01
-uartsignalpausetime = 0.1 #seconds
+uartsignalpausetime = 10 #seconds
 
 #picos must have common ground for uart to work
 def main():
@@ -25,7 +25,7 @@ def main():
     
     digit = servoDigitDisplay()
     digit._servospeed = servospeed
-    digit.clearDisplay()
+    digit.paintNumber(0x0E)
 
     for i in range(0,7):
         digit._extendAngles[i] = extend[i]
@@ -46,14 +46,9 @@ def main():
                         print("paintNumber {0}".format(n))
                         digit.paintNumber(n)
                         prev = n
-                if t.isalpha():
-                    code = t[readnumerictime]
-                    print("code {0}".format(code))
-                    if code == 'c':
-                        digit.clearDisplay()
-                    if code == 't':
-                        digit.testServos()
+                    #machine.deepsleep(50000)
             time.sleep(uartsignalpausetime)
+            #machine.deepsleep(5000)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:

@@ -55,7 +55,7 @@ class syncRTC:
     def __del__(self):
         self.red_led.duty_u16(0)
         self.green_led.duty_u16(0)
-        machine.reset()
+        #machine.reset()
 
     def connectWiFi(self):
         # Red LED indicates we're in the process of connecting to WiFi
