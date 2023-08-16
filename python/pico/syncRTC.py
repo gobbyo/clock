@@ -3,7 +3,6 @@ import network, rp2
 import urequests
 import json
 import time
-import secrets
 
 class syncRTC:
     externalIPaddressAPI = "https://api.ipify.org"
@@ -57,7 +56,7 @@ class syncRTC:
         self.green_led.duty_u16(0)
         #machine.reset()
 
-    def connectWiFi(self):
+    def connectWiFi(self, ssid, pwd):
         # Red LED indicates we're in the process of connecting to WiFi
         # Green LED indicates we've successfully synced the clock
         self.green_led.duty_u16(0)
@@ -67,7 +66,7 @@ class syncRTC:
             wlan.active(True)
             wlan.config(pm = 0xa11140)
             #print("Connecting to WiFi, ssid={0}, pwd={1}".format(secrets.ssid, secrets.pwd))
-            wlan.connect(secrets.ssid, secrets.pwd)
+            wlan.connect(ssid, pwd)
 
             while not wlan.isconnected() and wlan.status() >= 0:
                 print("connecting...")

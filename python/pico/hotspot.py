@@ -3,8 +3,8 @@ import socket
 import network            #importing network
 import gc
 import uio
-import machine
 import time
+import config
 
 #purpose of this class is to bootstrap the PICO W connectivity by and setting the wifi ssid and password
 #this class will also allow the user to set the temperature and humidity to be displayed on the pico
@@ -25,14 +25,11 @@ class hotspot:
     
     def _web_page(self):
         page = ""
-        line = ""
         with uio.open(self.adminwebpage, 'r') as f:
             while True:
                 line = f.readline()
                 if not line:
                     break
-                if line.find('<p id="url"') > 0:
-                        line = '        <p id="url" value="' + self.url + '" >hotspot address: ' + self.url + '</p>'  
                 page += line
         f.close()
         return page
@@ -41,30 +38,31 @@ class hotspot:
         print("_parseRequest()")
         evalResponse = True
         lines = request.split('\r\n')
+        conf = config.config("")
         #titles=['ssid','pwd','temp','humid','restart']
         for i in lines:
             if i.find('Referer:') == 0:
                 query = i.split('http://' + self.url + '/')
+
                 if len(query) > 1:
                     values = query[1].split(';')
-                    with uio.open('config.py', 'w') as f:         
-                        for v in values:
-                            t = v.split('=')
-                            if len(t) > 1:
-                                if t[0].find('restart') >= 0:
-                                    if t[1].find('on') >= 0:
-                                        evalResponse = False
-                                if t[0].find('ssid') >= 0:
-                                    self.ssid = t[1]
-                                    #f.write('ssid="' + t[1] + '"\n')
-                                if t[0].find('pwd') >= 0:
-                                    self.pwd = t[1]
-                                    #f.write('pwd="' + t[1] + '"\n')
-                                else:
-                                    f.write(t[0] + '="' + t[1] + '"\n')
-                                    print("writing to config.py: {0}={1}".format(t[0],t[1]))
-                        f.flush()
-                        f.close()
+                    for v in values:
+                        t = v.split('=')
+                        if len(t) > 1:
+                            if t[0].find('restart') >= 0:
+                                if t[1].find('on') >= 0:
+                                    evalResponse = False
+                            if t[0].find('ssid') >= 0:
+                                self.ssid = t[1]
+                            if t[0].find('pwd') >= 0:
+                                self.pwd = t[1]
+                            if t[0].find('temp') >= 0:
+                                conf.write('temp',t[1])
+                            if t[0].find('humid') >= 0:
+                                conf.write('humid',t[1])
+                            if t[0].find('synctime') >= 0:
+                                s = t[1].split(':')
+                                conf.write('synctime',"{0:04}\n".format(s[0]+s[1]))
         return evalResponse
     
     def run(self):

@@ -3,26 +3,15 @@ import hotspot
 import machine
 import json
 import time
+import config
 
 maxAttempts = 3
-dailySyncTime = "1200"  #todo: make this configurable
+dailySyncTime = "1200"  #default
 
-def testsegments(uarttime):
-    for i in range(0,10):
-        s = "{0:02d}{1:02d}".format(i+(i*10),i+(i*10))
-        print(s)
-        b = bytearray(s, 'utf-8')
-        machine.uarttime.write(b)
-        time.sleep(5)
-
-    b = bytearray("cccc", 'utf-8')
-    machine.uarttime.write(b)
-    time.sleep(7)
-
-def syncTime(sync):
+def syncTime(sync, ssid, pwd):
     print("syncTime()")
     i = 0
-    while not sync.connectWiFi():
+    while not sync.connectWiFi(ssid, pwd):
         time.sleep(5)
         if i > maxAttempts:
             raise("Unable to connect to WiFi")
@@ -48,18 +37,26 @@ def main():
 
     try:
         sync = syncRTC.syncRTC()
-        dailySyncTime = currentTime = "1915"
+        conf = config.config("")
+        stime = conf.read("synctime")
+        dailySyncTime = currentTime = conf.read("synctime")
+        prevSync = False
         while True:
-            if currentTime == dailySyncTime:
-                syncTime(sync)
+            if (int(currentTime) == int(dailySyncTime)):
+                if prevSync == False:
+                    syncTime(sync, ssid, pwd)
+                prevSync = True
+            else:
+                prevSync = False
             j = json.dumps(sync.rtc.datetime())
 
             if(len(j) < 256):
-                currentTime = "{0:02d}{1:02d}".format(sync.rtc.datetime()[4], sync.rtc.datetime()[5])
-                print(currentTime)
+                currentTime = "{0:02}{1:02}".format(sync.rtc.datetime()[4], sync.rtc.datetime()[5])
                 b = bytearray(currentTime, 'utf-8')
                 uarttime.write(b)
-                time.sleep(5)
+                #time.sleep(5)
+                machine.deepsleep(50000)
+                time.sleep(1)
 
     except KeyboardInterrupt:
         print('KeyboardInterrupt')

@@ -1,0 +1,33 @@
+import uio
+import ujson
+
+class config():
+    def __init__(self, filename):
+        print("config constructor")
+        if (filename == None) or (filename == "") or (filename.isempty()):
+            self.filename = "config.json"
+        else:
+            self.filename = filename
+        print("config filename = {0}".format(self.filename))
+    
+    def __del__(self):
+        print("config destructor")
+        pass
+
+    def read(self,name):
+        c = ""
+        with uio.open(self.filename, "r") as f:
+            c = ujson.load(f)
+            f.close()
+        return c[name]
+    
+    def write(self,name,value):
+        c = ""
+        with uio.open(self.filename, "r") as f:
+            c = ujson.load(f)
+            f.close()
+        with uio.open(self.filename, "w") as f:
+            c[name] = value
+            ujson.dump(c, f)
+            f.flush()
+            f.close()

@@ -2,49 +2,43 @@
 <html>
     <body>
         <h1>Analog Clock Controls Settings</h1>
-        <p id="url" value="">hotspot url</p>
-        <h2>WIFI</h2>
-            <form onsubmit="go()" method="get"></form>
-                <p>name: <input type="text" id="ssid" value="wifi name"></p>
-                <p>password: <input type="password" id="pwd" value="password"></p>
-                <p><input type=checkbox id="restart" checked> restart upon submission</p>
-                
-                <h2>Features</h2>
-
-                <p><input type=checkbox id="temp" checked> display temperature</p>
-                <p><input type=checkbox id="humid" checked> display humidity</p>
-
-                <p><button type="button" onclick="buildurl()">Submit</button></p>
-            </form>
+        <form onsubmit="buildurl()">
+            <p>name: <input type="text" id="ssid" value="wifi name"></p>
+            <p>password: <input type="password" id="pwd" value="password"></p>
+            <p><input type=checkbox id="restart" checked> restart upon submission</p>
+            <p><input type=checkbox id="temp" checked> display temperature</p>
+            <p><input type=checkbox id="humid" checked> display humidity</p>
+            <p><input type="time" id="synctime" checked> daily time to synchronize clock</p>
+            <p><input type="submit"></p>
+        </form>
         <script>
-        function buildurl() {
-            var url = document.getElementById("url").value;
-            var ssid = document.getElementById("ssid").value;
-            var pwd = document.getElementById("pwd").value;
-            var restart = document.getElementById("restart").checked;
-            if (restart == true) {
-                restart = "on";
-            } else {
-                restart = "off";
-            }
-            var temp = document.getElementById("temp").checked;
-            if (temp == true) {
-                temp = "on";
-            } else {
-                temp = "off";
-            }
-            var humid = document.getElementById("humid").checked;
-            if (humid == true) {
-                humid = "on";
-            } else {
-                humid = "off";
-            }
-            var query = "ssid=" + ssid + ";pwd=" + pwd + ";temp=" + temp + ";humid=" + humid + ";restart=" + restart;
+            function buildurl() {
+                var ssid = document.getElementById("ssid").value;
+                var pwd = document.getElementById("pwd").value;
+
+                var restart = document.getElementById("restart").checked;
+                if (restart == true) {
+                    restart = "on";
+                } else {
+                    restart = "off";
+                }
+                var temp = document.getElementById("temp").checked;
+                if (temp == true) {
+                    temp = "on";
+                } else {
+                    temp = "off";
+                }
+                var humid = document.getElementById("humid").checked;
+                if (humid == true) {
+                    humid = "on";
+                } else {
+                    humid = "off";
+                }
+                var synctime = document.getElementById("synctime").value;
+                var query = "ssid=" + ssid + ";pwd=" + pwd + ";temp=" + temp + ";humid=" + humid + ";synctime=" + synctime + ";restart=" + restart;
             
-            document.forms[0].action = url + query;
-            document.forms[0].submit();
-        }
+                document.forms[0].action = query;
+            }
         </script>
-        </input>
     </body>
 </html>
