@@ -14,6 +14,7 @@ class hotspot:
         self.hotspotssid = ssid                  #Set access point name
         self.hotspotpassword = password      #Set your access point password
         self.adminwebpage = 'admin.html'
+        self.completedsettings = 'completedsettings.html'
         self.channel = 11
         self.ssid = "ssid"
         self.pwd = "pwd"
@@ -23,9 +24,9 @@ class hotspot:
         time.sleep(1)
         #machine.reset() #reset to avoid OSError: [Errno 98] EADDRINUSE
     
-    def _web_page(self):
+    def _web_page(self, htmlpage):
         page = ""
-        with uio.open(self.adminwebpage, 'r') as f:
+        with uio.open(htmlpage, 'r') as f:
             while True:
                 line = f.readline()
                 if not line:
@@ -56,13 +57,17 @@ class hotspot:
                                 self.ssid = t[1]
                             if t[0].find('pwd') >= 0:
                                 self.pwd = t[1]
+                            if t[0].find('military') >= 0:
+                                conf.write('military',t[1])
                             if t[0].find('temp') >= 0:
                                 conf.write('temp',t[1])
+                            if t[0].find('tunit') >= 0:
+                                conf.write('tunit',t[1])
                             if t[0].find('humid') >= 0:
                                 conf.write('humid',t[1])
                             if t[0].find('synctime') >= 0:
                                 s = t[1].split(':')
-                                conf.write('synctime',"{0:04}\n".format(s[0]+s[1]))
+                                conf.write('synctime',"{0:04}".format(s[0]+s[1]))
         return evalResponse
     
     def run(self):
@@ -95,8 +100,14 @@ class hotspot:
             request = conn.recv(1024).decode('utf-8')
             print('Content = %s' % str(request))
             evalResponse = self._parseRequest(request)
-            response = self._web_page()
+            if evalResponse:
+                print("Admin page = {0}".format(self.adminwebpage))
+                response = self._web_page(self.adminwebpage)
+            else:
+                print("Restarting page = {0}".format(self.completedsettings))
+                response = self._web_page(self.completedsettings)
             conn.send(response)
+            time.sleep(5)
             conn.close()
         wifi.active(False)
         wifi.disconnect()

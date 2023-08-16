@@ -6,7 +6,12 @@
             <p>name: <input type="text" id="ssid" value="wifi name"></p>
             <p>password: <input type="password" id="pwd" value="password"></p>
             <p><input type=checkbox id="restart" checked> restart upon submission</p>
-            <p><input type=checkbox id="temp" checked> display temperature</p>
+            <p><input type=checkbox id="military" unchecked> display in military time</p>
+            <p><input type=checkbox id="temp" checked> display temperature
+            <select name="tunit" id="tunit">
+                <option value="f">fahrenheit</option>
+                <option value="c">celsius</option>
+              </select></p>
             <p><input type=checkbox id="humid" checked> display humidity</p>
             <p><input type="time" id="synctime" checked> daily time to synchronize clock</p>
             <p><input type="submit"></p>
@@ -15,6 +20,7 @@
             function buildurl() {
                 var ssid = document.getElementById("ssid").value;
                 var pwd = document.getElementById("pwd").value;
+                var tunit = document.getElementById("tunit").value;
 
                 var restart = document.getElementById("restart").checked;
                 if (restart == true) {
@@ -22,6 +28,13 @@
                 } else {
                     restart = "off";
                 }
+                var military = document.getElementById("military").checked;
+                if (military == true) {
+                    military = "on";
+                } else {
+                    military = "off";
+                }
+
                 var temp = document.getElementById("temp").checked;
                 if (temp == true) {
                     temp = "on";
@@ -35,7 +48,14 @@
                     humid = "off";
                 }
                 var synctime = document.getElementById("synctime").value;
-                var query = "ssid=" + ssid + ";pwd=" + pwd + ";temp=" + temp + ";humid=" + humid + ";synctime=" + synctime + ";restart=" + restart;
+                var query = "ssid=" + ssid 
+                query += ";pwd=" + pwd 
+                query += ";military=" + military 
+                query += ";temp=" + temp
+                query += ";tunit=" + tunit
+                query += ";humid=" + humid
+                query += ";synctime=" + synctime
+                query += ";restart=" + restart;
             
                 document.forms[0].action = query;
             }

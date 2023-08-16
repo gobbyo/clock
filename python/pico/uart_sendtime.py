@@ -54,9 +54,8 @@ def main():
                 currentTime = "{0:02}{1:02}".format(sync.rtc.datetime()[4], sync.rtc.datetime()[5])
                 b = bytearray(currentTime, 'utf-8')
                 uarttime.write(b)
-                #time.sleep(5)
-                machine.deepsleep(50000)
-                time.sleep(1)
+                #machine.deepsleep(50000)
+                time.sleep(5)
 
     except KeyboardInterrupt:
         print('KeyboardInterrupt')

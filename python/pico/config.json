@@ -1,6 +1,7 @@
 {  
     "temp":"on",
-    "tempunit":"f",
+    "tunit":"f",
     "humid":"on",
+    "military":"off",
     "synctime":"1030"
 }
