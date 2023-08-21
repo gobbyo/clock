@@ -1,8 +1,8 @@
 from servodisplay import servoDigitDisplay
 import time
 
-extend = [5,10,20,20,15,0,10]
-retract = [95,90,105,100,95,90,90]
+extend = [20,10,15,20,15,20,35]
+retract = [115,90,105,100,95,110,120]
 servospeed = 0.05
 
 def main():
@@ -13,9 +13,11 @@ def main():
         digit._extendAngles[i] = extend[i]
         digit._retractAngles[i] = retract[i]
     try:
-        for i in range(0,len(servoDigitDisplay._segnum)):
-            print("Number {0}".format(i))
-            digit.paintNumber(i)
+        while True:
+            for i in range(0,len(servoDigitDisplay._segnum)):
+                print("Number {0}".format(i))
+                digit.paintNumber(i)
+                time.sleep(1)
             time.sleep(2)
 
     except KeyboardInterrupt:

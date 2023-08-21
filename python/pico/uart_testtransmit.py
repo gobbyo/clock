@@ -1,26 +1,27 @@
 from machine import UART, Pin
 import time
 #note for this to work, the picos must have common ground
+
 def main():
+    testdata = ['1230', '230C', '550H', '1231', '220T', '540H']
     baudrate = [9600, 19200, 38400, 57600, 115200]
     led = Pin(25, Pin.OUT)
     try:
         uart1 = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
         uart1.init(baudrate[0], bits=8, parity=None, stop=1)
-        uart2 = UART(1, baudrate[1], tx=Pin(8), rx=Pin(9))
-        uart2.init(baudrate[1], bits=8, parity=None, stop=1)
         print("UART1 is configured as : ", uart1)
-        print("UART2 is configured as : ", uart2)
-        while True:
-            uart1.write(bytearray('On', 'utf-8'))
-            uart2.write(bytearray('High', 'utf-8'))
+        for t in testdata:
+            uart1.write(bytearray(t, 'utf-8'))
             led.on()
             time.sleep(1)
-
-            uart1.write(bytearray('Off', 'utf-8'))
-            uart2.write(bytearray('Low', 'utf-8'))
+            if uart1.any():
+                b = bytearray('0000', 'utf-8')
+                uart1.readinto(b)
+                t = b.decode('utf-8')
+                print(t)
             led.off()
             time.sleep(1)
+            
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:
