@@ -3,9 +3,10 @@ import time
 #note for this to work, the picos must have common ground
 
 def main():
-    testdata = ['1230', '230C', '550H', '1231', '220T', '540H']
+    #D=degree, P=percent, C=celsius, F=fahrenheit, R=clear
+    testdata = ['1230', '23DC', '55DP', '1231', '73DF', '54DP']
     baudrate = [9600, 19200, 38400, 57600, 115200]
-    led = Pin(25, Pin.OUT)
+    led = Pin('LED', Pin.OUT)
     try:
         uart1 = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
         uart1.init(baudrate[0], bits=8, parity=None, stop=1)

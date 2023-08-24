@@ -13,7 +13,7 @@ class InvalidPulseCount(Exception):
 MAX_UNCHANGED = const(100)
 MIN_INTERVAL_US = const(200000)
 HIGH_LEVEL = const(50)
-EXPECTED_PULSES = const(80)
+EXPECTED_PULSES = const(84)
  
 class DHT11:
     _temperature: float
@@ -77,6 +77,7 @@ class DHT11:
                     raise InvalidPulseCount(
                         "Got more than {} pulses".format(EXPECTED_PULSES)
                     )
+                # 26-28us for 0, 70us for 1
                 now = utime.ticks_us()
                 transitions[idx] = now - timestamp
                 timestamp = now
@@ -106,7 +107,7 @@ class DHT11:
         binary = 0
         for idx in range(0, len(pulses), 2):
             binary = binary << 1 | int(pulses[idx] > HIGH_LEVEL)
- 
+
         # Split into 5 bytes
         buffer = array.array("B")
         for shift in range(4, -1, -1):

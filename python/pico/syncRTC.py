@@ -5,7 +5,6 @@ import json
 import time
 
 class syncRTC:
-    externalIPaddressAPI = "https://api.ipify.org"
     connectedLED_pin = 28
     disconnectedLED_pin = 27
     ledlumins = int(65535/3) #1/3 of total brightness
@@ -23,11 +22,12 @@ class syncRTC:
 
     def syncclock(self):
         print("Sync clock")
-        print("Obtaining external IP Address")
+
         try:
-            externalIPaddress = urequests.get(self.externalIPaddressAPI).text
-            print("Obtained external IP Address: {0}".format(externalIPaddress))
-            timeAPI = "https://www.timeapi.io/api/Time/current/ip?ipAddress={0}".format(externalIPaddress)
+            print("Obtaining external IP Address")
+            externalIPaddress = urequests.request('GET','https://api.ipify.org')
+            print("Obtained external IP Address: {0}".format(externalIPaddress.text))
+            timeAPI = "https://www.timeapi.io/api/Time/current/ip?ipAddress={0}".format(externalIPaddress.text)
             r = urequests.get(timeAPI)
             z = json.loads(r.content)
             timeAPI = "https://www.timeapi.io/api/TimeZone/zone?timeZone={0}".format(z["timeZone"])
@@ -38,7 +38,8 @@ class syncRTC:
             print(t)
             #[year, month, day, weekday, hours, minutes, seconds, subseconds]
             self.rtc.datetime((int(z["year"]), int(z["month"]), int(z["day"]), 0, int(t[0]), int(t[1]), int(z["seconds"]), 0))
-        except:
+        except Exception as e:
+            print("Exception: {}".format(e))
             print("Unable to obtain external IP Address")
             time.sleep(1)
             self.red_led.duty_u16(0)
@@ -46,14 +47,13 @@ class syncRTC:
             self.red_led.duty_u16(self.ledlumins)
             return False
         finally:
-            print("successfully updated RTC time")
             self.green_led.duty_u16(self.ledlumins)
             self.red_led.duty_u16(0)
-            return True
 
     def __del__(self):
         self.red_led.duty_u16(0)
         self.green_led.duty_u16(0)
+        urequests.Response.close()
         #machine.reset()
 
     def connectWiFi(self, ssid, pwd):

@@ -16,6 +16,7 @@ class hotspot:
         self.adminwebpage = 'admin.html'
         self.completedsettings = 'completedsettings.html'
         self.channel = 11
+        self.waittime = 10
         self.ssid = "ssid"
         self.pwd = "pwd"
 
@@ -70,7 +71,31 @@ class hotspot:
                                 conf.write('synctime',"{0:04}".format(s[0]+s[1]))
         return evalResponse
     
-    def run(self):
+    def connectWifi(self):
+        wifi = network.WLAN(network.STA_IF)
+        wifi.active(True)
+        wifi.connect(self.hotspotssid,self.hotspotpassword)
+        print('wifi.isconnected({0})'.format(wifi.isconnected()))
+        print('self.hotspotssid={0},self.hotspotpassword={1}'.format(self.hotspotssid,self.hotspotpassword))
+
+        max_wait = self.waittime
+        while max_wait > 0:
+            if wifi.isconnected():
+                #STAT_IDLE – no connection and no activity,
+                #STAT_CONNECTING – connecting in progress,
+                #STAT_WRONG_PASSWORD – failed due to incorrect password,
+                #STAT_NO_AP_FOUND – failed because no access point replied,
+                #STAT_CONNECT_FAIL – failed due to other problems,
+                #STAT_GOT_IP – connection successful
+                print('wifi.status() = {0}'.format(wifi.status()))
+                self.url = wifi.ifconfig()[0]
+                return True
+            max_wait -= 1
+            print('waiting for connection...')
+            time.sleep(1)
+        return False
+
+    def connectAdmin(self):
         print('Clock Hotspot is starting')
         evalResponse = True
         gc.collect()
@@ -80,10 +105,10 @@ class hotspot:
         wifi.config(essid=self.hotspotssid,password=self.hotspotpassword,channel=self.channel,pm = 0xa11140)
         wifi.ifconfig([self.url, '255.255.255.0', self.url, '0.0.0.0'])
         wifi.active(True)
-        i = 0
-        while wifi.active() == False:
-            time.sleep(1)
-            i += 1
+        i = waittime
+        while (wifi.active() == False) and (i > 0):
+            time.sleep(2)
+            i -= 1
             print("Waiting for WiFi AP to be active, attempt {0}".format(i))
             pass
 
