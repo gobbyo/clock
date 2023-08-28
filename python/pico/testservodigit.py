@@ -1,8 +1,8 @@
 from servodisplay import servoDigitDisplay
 import time
 
-extend = [20,10,15,20,15,20,35]
-retract = [115,90,105,100,95,110,120]
+extend = [25,5,10,10,15,25,35]
+retract = [115,95,110,100,105,115,120]
 servospeed = 0.05
 
 def main():
