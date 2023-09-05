@@ -1,18 +1,20 @@
 from servodisplay import servoDigitDisplay
 import config
+import machine
 import time
 
 extend = [25,5,10,20,20,20,35]
 retract = [115,95,110,110,110,115,120]
-servospeed = 0.05
 
 def main():
+
     digit = servoDigitDisplay()
     conf = config.Config("digit.json")
 
     for i in range(0,7):
         digit._extendAngles[i] = extend[i]
         digit._retractAngles[i] = retract[i]
+    
     try:
         while True:
             prev = conf.read("previous")
@@ -27,7 +29,8 @@ def main():
             if i >= len(digit._segnum):
                 i = 0
             conf.write("current",i)
-            time.sleep(2)
+            machine.deepsleep(5000)
+            #time.sleep(5)
             prev = conf.read("previous")
 
     except KeyboardInterrupt:

@@ -74,12 +74,12 @@ class servoDigitDisplay:
             i += 1
         return a
     
-    def setpreviousNumber(self,val):
-        self._previousNumber = self.getArray(self._segnum[val])
-        for i in range(0,len(self._previousNumber)):
-            if self._previousNumber[i] == 1:
+    def repaintLEDs(self,val):
+        input = self.getArray(self._segnum[val])
+        for i in range(len(input)):
+            if input[i] == 1:
                 self._leds[i].on()
-
+    
     def paintNumber(self,val):
         input = []
         input = self.getArray(self._segnum[val])
