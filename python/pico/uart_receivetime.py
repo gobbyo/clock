@@ -1,6 +1,8 @@
-from machine import UART, Pin, PWM
+from machine import UART, Pin
 from servodisplay import servoDigitDisplay
 import time
+import config
+import machine
 
 hour_tens = 0
 hour_ones = 1
@@ -18,11 +20,26 @@ retract = [115,90,105,100,95,110,120]
 servospeed = 0.01
 uartsignalpausetime = 10 #seconds
 
+def updateDigit(digit,conf,n):
+    conf.write("current",n)
+    prev = conf.read("previous")
+    digit.setpreviousNumber(prev)
+    digit.paintNumber(n)
+    print("Number {0}".format(n))
+    conf.write("previous",n)
+    deepsleep = conf.read("deepsleep")
+    if deepsleep == 1:
+        machine.deepsleep(5000)
+    else:
+        time.sleep(5)
+
 #picos must have common ground for uart to work
 def main():
     prev = -1
     baudrate = [9600, 19200, 38400, 57600, 115200]
     
+    conf = config.Config("digit.json")
+
     digit = servoDigitDisplay()
     digit._servospeed = servospeed
     digit.paintNumber(0x0E)
@@ -43,12 +60,8 @@ def main():
                 if t.isdigit():
                     n = int(t[readnumerictime])
                     if prev != n:
-                        print("paintNumber {0}".format(n))
-                        digit.paintNumber(n)
-                        prev = n
-                    #machine.deepsleep(50000)
+                        updateDigit(digit,conf,n)
             time.sleep(uartsignalpausetime)
-            #machine.deepsleep(5000)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:
