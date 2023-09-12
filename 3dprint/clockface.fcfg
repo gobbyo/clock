@@ -1,7 +1,7 @@
 [General]
-extruderTemp0=@Variant(\0\0\0\x87\x43R\0\0)
+extruderTemp0=@Variant(\0\0\0\x87\x43W\0\0)
 extruderTemp1=@Variant(\0\0\0\x87\x43R\0\0)
-platformTemp=@Variant(\0\0\0\x87\x42H\0\0)
+platformTemp=@Variant(\0\0\0\x87\x42p\0\0)
 chamberTemp=@Variant(\0\0\0\x87\x42 \0\0)
 chamberPreheatTime=@Variant(\0\0\0\x87\0\0\0\0)
 layerTempsEnable=true
@@ -29,7 +29,7 @@ retractOutSpeed1=@Variant(\0\0\0\x87\x41\xf0\0\0)
 retractOverExtrudeLen0=@Variant(\0\0\0\x87\0\0\0\0)
 retractOverExtrudeLen1=@Variant(\0\0\0\x87\0\0\0\0)
 retractCrossOutlineOnly=false
-shellCnt=@Variant(\0\0\0\x87@\x80\0\0)
+shellCnt=@Variant(\0\0\0\x87@@\0\0)
 shellMaxOverlapRatio=@Variant(\0\0\0\x87>\x99\x99\x9a)
 shellOuterSpeedRatio=@Variant(\0\0\0\x87?\0\0\0)
 shellOuterMaxSpeed=@Variant(\0\0\0\x87\x42 \0\0)
@@ -48,7 +48,7 @@ shellStartAccEnable=true
 shellStartAccDist=@Variant(\0\0\0\x87\x42H\0\0)
 fillTopSolidCnt=@Variant(\0\0\0\x87@\xc0\0\0)
 fillBottomSolidCnt=@Variant(\0\0\0\x87@\xc0\0\0)
-fillDensity=@Variant(\0\0\0\x87?@\0\0)
+fillDensity=@Variant(\0\0\0\x87?\0\0\0)
 fillPattern=2
 fillStartAngle=@Variant(\0\0\0\x87\x42\x34\0\0)
 fillCrossAngle=@Variant(\0\0\0\x87\x42\xb4\0\0)
