@@ -4,13 +4,12 @@ import time
 import config
 import logs
 
+#change this to hour_tens, hour_ones, minute_tens, or minute_ones
 hour_tens = 0
 hour_ones = 1
 minute_tens = 2
 minute_ones = 3
 
-#change this to hour_tens, hour_ones, minute_tens, or minute_ones
-readnumerictime = hour_tens
 uartsignalpausetime = 1 #seconds
 
 def decodeHex(value):
@@ -26,6 +25,15 @@ def decodeHex(value):
     elif value == "E":
         returnval = 14
     return int(returnval)
+
+def validUART(value):
+    if len(value) != 4:
+        return False
+    for d in value:
+        i = decodeHex(d)
+        if (i < 0) or (i > 14):
+            return False
+    return True
 
 def updateDigit(digit,conf):
     prev = conf.read("previous")
@@ -53,6 +61,7 @@ def main():
     conf = config.Config("digit.json")
     extend = conf.read("extend")
     retract = conf.read("retract")
+    digitdisplay = conf.read("digit")
     log.write("read digit.json file")
 
     digit = servoDigitDisplay()
@@ -72,21 +81,20 @@ def main():
             s = uart.any()
             log.write("uart.any() = {0}".format(s))
 
-            if s == 4:
+            if s > 0:
                 b = bytearray('0000', 'utf-8')
                 uart.readinto(b)
-                t = str(b.decode('utf-8'))
 
-                log.write("raw decode = {0}".format(t))
-
-                n = decodeHex(t[readnumerictime])
-                conf.write("current",n)
-
-                log.write("current = {0}, previous = {1} = {0}".format(n,prev))
-
-                if prev != n:
-                    updateDigit(digit,conf)
-                    prev = n
+                if s == 4:
+                    t = str(b.decode('utf-8'))
+                    if validUART(t):
+                        log.write("raw decode = {0}".format(t))
+                        n = decodeHex(t[digitdisplay])
+                        conf.write("current",n)
+                        log.write("current = {0}, previous = {1}".format(n,prev))
+                        if prev != n:
+                            updateDigit(digit,conf)
+                            prev = n
             time.sleep(uartsignalpausetime)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')

@@ -20,7 +20,7 @@ def updateDigit(digit,conf):
     if deepsleep == 1:
         machine.deepsleep(5000)
     else:
-        time.sleep(5)
+        time.sleep(1)
 
 def main():
     digit = servoDigitDisplay()
