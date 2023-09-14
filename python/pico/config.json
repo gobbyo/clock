@@ -1,7 +1,9 @@
 {  
     "temp":"on",
+    "tempreading":0,
     "tunit":"f",
     "humid":"on",
+    "humidreading":0,
     "military":"off",
     "synctime":"1030"
 }

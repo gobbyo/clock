@@ -74,9 +74,9 @@ class hotspot:
     def connectWifi(self):
         wifi = network.WLAN(network.STA_IF)
         wifi.active(True)
+        print('self.hotspotssid={0},self.hotspotpassword={1}'.format(self.hotspotssid,self.hotspotpassword))
         wifi.connect(self.hotspotssid,self.hotspotpassword)
         print('wifi.isconnected({0})'.format(wifi.isconnected()))
-        print('self.hotspotssid={0},self.hotspotpassword={1}'.format(self.hotspotssid,self.hotspotpassword))
 
         max_wait = self.waittime
         while max_wait > 0:
