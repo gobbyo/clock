@@ -7,6 +7,7 @@ import logs
 import config
 
 maxAttempts = 2
+syncWifi = 8*60 #minutes
 dailySyncTime = "1200"  #default
 elapsedwaitDate = 20 #seconds
 elapsedwaitTemp = 30 #seconds
@@ -38,12 +39,11 @@ def formathour(hour):
     return strhour
 
 def setHumidTemp(conf):
-    pin = Pin(20, Pin.OUT, pull=Pin.PULL_DOWN)
-    switch = Pin(2, Pin.OUT,value=0)
     temp = 0
     humid = 0
 
-    for i in range(10):
+    readtempattempts = 10
+    while readtempattempts > 0:
         try:
             switch.on()
             time.sleep(1)
@@ -57,13 +57,14 @@ def setHumidTemp(conf):
                 conf.write("humidreading",humid)
                 log.write("humidreading = {0}".format(humid))
                 switch.off()
-                return
+                readtempattempts = 0
+                log.write("Finished recording temp/humid sensor")
         except Exception as e:
             log.write("Exception: {}".format(e))
         finally:
-            log.write("Finished recording temp/humid sensor")
             switch.off()
             time.sleep(1)
+            readtempattempts -=1
 
 def main():
     baudrate = [9600, 19200, 38400, 57600, 115200]
@@ -71,6 +72,10 @@ def main():
     uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
     global log
     log = logs.logger("sendtime.log", 4096)
+    global pin
+    pin = Pin(20, Pin.OUT, pull=Pin.PULL_DOWN)
+    global switch
+    switch = Pin(2, Pin.OUT,value=0)
 
     try:
         global currentTime
@@ -85,36 +90,36 @@ def main():
         
         log.write("Connected to WiFi")
         elapsedseconds = 0
-        waitforwifi = 2
+        waitforwifi = 0
         sync = syncRTC.syncRTC()
+        sync.syncclock()
         currentTime = "{0}{1:02}".format(formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
 
         while True:
             log.write("elapsed seconds = {0}".format(elapsedseconds))
-            showtemp = True
 
             if (elapsedseconds < elapsedwaitDate) or (elapsedseconds >= elapsedwaitTime):
-                if waitforwifi >= 2:
-                    connectattempts = 3
+                if waitforwifi >= syncWifi:
+                    connectattempts = maxAttempts
                     while connectattempts > 0:
                         if wifi.connectWifi():
                             log.write("Connected to WiFi Hotspot")
                             log.write("URL: {0}".format(wifi.url))
                             sync.syncclock()
+                            waitforwifi = 0
                             break
                         time.sleep(5)
                         connectattempts -= 1
-                    waitforwifi = 0
-                else:
-                    currentTime = "{0}{1:02}".format(formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
-                    b = bytearray(currentTime, 'utf-8')
-                    uarttime.write(b)
-                    log.write("sent UART = {0}".format(b))
-                    time.sleep(2)
-
-                    log.write("currentTime = {0}".format(currentTime))
-                    if elapsedseconds == 0:
-                        waitforwifi += 1
+                
+                currentTime = "{0}{1:02}".format(formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
+                b = bytearray(currentTime, 'utf-8')
+                uarttime.write(b)
+                log.write("sent UART = {0}".format(b))
+                time.sleep(2)
+                log.write("currentTime = {0}".format(currentTime))
+                        
+                if elapsedseconds == 0:
+                    waitforwifi += 1
             
             if (elapsedseconds >= elapsedwaitDate) and (elapsedseconds < elapsedwaitTemp):
                 currentDate = "{0:02}{1:02}".format(sync.rtc.datetime()[1], sync.rtc.datetime()[2])
