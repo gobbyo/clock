@@ -1,6 +1,6 @@
 import syncRTC
 import picowifi
-from machine import Pin
+import machine
 import time
 from dht11 import DHT11
 import logs
@@ -15,6 +15,16 @@ tempswitchpin = const(0)
 uartTxPin = const(12)
 uartRxPin = const(13)
 
+class timeEnum():
+    year = 0
+    month = 1
+    day = 2
+    weekday = 3
+    hours = 4
+    minutes = 5
+    seconds = 6
+    subseconds = 7
+
 class kineticClock():
     def __init__(self) -> None:
         print("self.__init__()")
@@ -22,8 +32,6 @@ class kineticClock():
         baudrate = [9600, 19200, 38400, 57600, 115200]
 
         self._maxAttemps = 2
-        self._syncWifi = 60 #minutes
-        self._dailySyncTime = "1200"  #default
         self._elapsedwaitSyncHumidTemp = 5 #seconds
         self._elapsedwaitDate = 20 #seconds
         self._elapsedwaitTemp = 30 #seconds
@@ -33,11 +41,12 @@ class kineticClock():
         self._uarttime = machine.UART(0, baudrate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
         self._uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
         self._log = logs.logger("sendtime.log", 4096)
-        self._sensor = DHT11(Pin(tempsensorpin, Pin.OUT, pull=Pin.PULL_DOWN))
-        self._switch = Pin(tempswitchpin, Pin.OUT,value=0)
+        self._sensor = DHT11(machine.Pin(tempsensorpin, machine.Pin.OUT, pull=machine.Pin.PULL_DOWN))
+        self._switch = machine.Pin(tempswitchpin, machine.Pin.OUT,value=0)
         self._colons = servoColonsDisplay()
         self._currentTime = "{0}{1:02}".format(0, 0)
         self._wifi = picowifi.hotspot(secrets.usr, secrets.pwd)
+        self._sync = syncRTC.syncRTC()
     
     def __del__(self):
         print("self.__del__()")
@@ -57,6 +66,16 @@ class kineticClock():
             self._log.write("NOT Connected to WiFi")
         return connected
 
+    def syncClock(self, conf):
+        self._sync.syncclock()
+        print("external ip address = {0}".format(self._sync.externalIPaddress))
+        g = urequests.get("http://ip-api.com/json/{0}".format(self._sync.externalIPaddress))
+        geo = json.loads(g.content)
+        conf.write("lat",geo['lat'])
+        conf.write("lon",geo['lon'])
+        self._log.write("lat = {0}".format(geo['lat']))
+        self._log.write("lon = {0}".format(geo['lon']))
+        
     def formathour(self, hour):
         if hour > 12:
             hour -= 12
@@ -119,9 +138,9 @@ class kineticClock():
         time.sleep(1)
         self._colons.extend(True, True)
     
-    def displayDate(self, sync):
+    def displayDate(self):
         self._log.write("--display date--")               
-        currentDate = "{0:02}{1:02}".format(sync.rtc.datetime()[1], sync.rtc.datetime()[2])
+        currentDate = "{0:02}{1:02}".format(self._sync.rtc.datetime()[1], self._sync.rtc.datetime()[2])
         b = bytearray(currentDate, 'utf-8')
         self._uarttime.write(b)
         time.sleep(1)
@@ -166,6 +185,11 @@ class kineticClock():
             self._colons.extend(False, True)
             conf.write("showIndoorTemp",1)
 def main():
+    wifischedule = 4 #hours
+    temphumidschedule = 2 #minutes
+    nextwifischedule = 0
+    nexttemphumidschedule = 0
+
     try:
         clock = kineticClock()
 
@@ -173,44 +197,51 @@ def main():
         conf = config.Config("config.json")
 
         if clock.connectWifi(conf):
-            sync = syncRTC.syncRTC()
-            sync.syncclock()
-            #currentTime = "{0}{1:02}".format(clock.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])  
-            print("external ip address = {0}".format(sync.externalIPaddress))
-            g = urequests.get("http://ip-api.com/json/{0}".format(sync.externalIPaddress))
+            clock.syncClock(conf)
+            print("external ip address = {0}".format(clock._sync.externalIPaddress))
+            g = urequests.get("http://ip-api.com/json/{0}".format(clock._sync.externalIPaddress))
             geo = json.loads(g.content)
             conf.write("lat",geo['lat'])
             conf.write("lon",geo['lon'])
             clock._log.write("lat = {0}".format(geo['lat']))
             clock._log.write("lon = {0}".format(geo['lon']))
+        
+        nexttemphumidschedule = (clock._sync.rtc.datetime()[timeEnum.minutes] + temphumidschedule)%60 #minutes
+        nextwifischedule = (clock._sync.rtc.datetime()[timeEnum.hours] + wifischedule)%24 #hours
 
         while True:
             #display time
             if (elapsedseconds > clock._elapsedwaitTime) or (elapsedseconds < clock._elapsedwaitSyncHumidTemp):
-                clock.displayTime(sync)
-                clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
+                clock.displayTime(clock._sync)
+                clock._log.write("elapsedmins = {0}, elapsedseconds = {1}".format(clock._sync.rtc.datetime()[timeEnum.minutes], elapsedseconds))
+                
+                #sensor measurement
+                clock._log.write("nexttemphumidschedule = {0}".format(nexttemphumidschedule))
+                if nexttemphumidschedule <= clock._sync.rtc.datetime()[timeEnum.minutes]:
+                    nexttemphumidschedule = (clock._sync.rtc.datetime()[timeEnum.minutes] + temphumidschedule)%60 #minutes
+                    clock._log.write("--reading temp sensor--")
+                    clock.setIndoorTemp(conf)
+                    time.sleep(1)
+                    clock.setOutdoorTemp(conf)
+                    time.sleep(2)
                 while elapsedseconds < clock._elapsedwaitSyncHumidTemp:
-                    elapsedseconds = round(sync.rtc.datetime()[6])
+                    elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
                     time.sleep(1)
+                
+                #wifi and time sync
+                if nextwifischedule <= clock._sync.rtc.datetime()[timeEnum.hours]:
+                    nextwifischedule = (clock._sync.rtc.datetime()[timeEnum.hours] + wifischedule)%24 #hours
+                    clock._log.write("--wifi and time sync--")
+                    if clock.connectWifi(conf):
+                        clock.syncClock(conf)
             
-            #read temp/humid sensor
-            if (elapsedseconds >= clock._elapsedwaitSyncHumidTemp) and (elapsedseconds < clock._elapsedwaitDate):
-                clock._log.write("--reading temp sensor--")
-                clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
-                clock.setIndoorTemp(conf)
-                time.sleep(1)
-                clock.setOutdoorTemp(conf)
-                while (elapsedseconds < clock._elapsedwaitDate):
-                    time.sleep(1)
-                    elapsedseconds = round(sync.rtc.datetime()[6])
-
             #display date
             if (elapsedseconds >= clock._elapsedwaitDate) and (elapsedseconds < clock._elapsedwaitTemp):
-                clock.displayDate(sync)
+                clock.displayDate()
                 clock._log.write("elapsedseconds = {0}".format(elapsedseconds))                
                 while (elapsedseconds < clock._elapsedwaitTemp):
                     time.sleep(1)
-                    elapsedseconds = round(sync.rtc.datetime()[6])
+                    elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
 
             #display temp
             if (elapsedseconds >= clock._elapsedwaitTemp) and (elapsedseconds < clock._elapsedwaitHumid):
@@ -218,7 +249,7 @@ def main():
                 clock._log.write("elapsedseconds = {0}".format(elapsedseconds))                
                 while (elapsedseconds < clock._elapsedwaitHumid):
                     time.sleep(1)
-                    elapsedseconds = round(sync.rtc.datetime()[6])
+                    elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
 
             #display humidity
             if (elapsedseconds >= clock._elapsedwaitHumid) and (elapsedseconds < clock._elapsedwaitTime):
@@ -226,9 +257,9 @@ def main():
                 clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
                 while (elapsedseconds < clock._elapsedwaitTime):
                     time.sleep(1)
-                    elapsedseconds = round(sync.rtc.datetime()[6])
+                    elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
 
-            elapsedseconds = round(sync.rtc.datetime()[6])
+            elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
             print("elapsedseconds = {0}".format(elapsedseconds))
             time.sleep(1)
 
