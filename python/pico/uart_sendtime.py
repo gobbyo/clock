@@ -5,149 +5,249 @@ import time
 from dht11 import DHT11
 import logs
 import config
+import json
+import urequests
+import secrets
+from servocolons import servoColonsDisplay
 
-maxAttempts = 2
-syncWifi = 8*60 #minutes
-dailySyncTime = "1200"  #default
-elapsedwaitDate = 20 #seconds
-elapsedwaitTemp = 30 #seconds
-elapsedwaitHumid = 40 #seconds
-elapsedwaitTime = 50 #seconds
+tempsensorpin = const(20)
+tempswitchpin = const(0)
+uartTxPin = const(12)
+uartRxPin = const(13)
 
-def syncTime(sync, ssid, pwd):
-    print("syncTime()")
-    i = 0
-    while not sync.connectWiFi(ssid, pwd):
-        time.sleep(5)
-        if i > maxAttempts:
-            raise("Unable to connect to WiFi")
-        i += 1
 
-    i = 0
-    while not sync.syncclock():
-        time.sleep(5)
-        if i > maxAttempts:
-            raise Exception("Failed to call web APIs")
-        i += 1
+class displaySecEnum():
+    date = 0
+    temp = 1
+    humid = 2
+    time = 3
 
-def formathour(hour):
-    if hour > 12:
-        hour -= 12
-    h = strhour = "{0:02}".format(hour)
-    if strhour[0] == "0":
-        strhour = "E" + h[1]
-    return strhour
+class kineticClock():
+    def __init__(self) -> None:
+        print("self.__init__()")
 
-def setHumidTemp(conf):
-    temp = 0
-    humid = 0
+        baudrate = [9600, 19200, 38400, 57600, 115200]
 
-    readtempattempts = 10
-    while readtempattempts > 0:
+        self.elapsedDisplayTimeSeconds = [[10,0],[10,0],[10,0],[30,0]]
+        self.dailySyncTimeMinutes = { 'indoorTemp': [5,0], 'outdoorTemp': [5,0], 'wifi': [15,0]}
+        self._maxAttemps = 2
+        self._syncWifi = 60 #minutes
+        self._dailySyncTime = "1200"  #default
+        self._elapsedwaitSyncHumidTemp = 0 #seconds
+        self._elapsedwaitDate = 15 #seconds
+        self._elapsedwaitTemp = 25 #seconds
+        self._elapsedwaitHumid = 35 #seconds
+        self._elapsedwaitTime = 45 #seconds
+
+        self._uarttime = machine.UART(0, baudrate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
+        self._uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
+        self._log = logs.logger("sendtime.log", 4096)
+        self._sensor = DHT11(Pin(tempsensorpin, Pin.OUT, pull=Pin.PULL_DOWN))
+        self._switch = Pin(tempswitchpin, Pin.OUT,value=0)
+        self._colons = servoColonsDisplay()
+        self._currentTime = "{0}{1:02}".format(0, 0)
+        self._wifi = picowifi.hotspot(secrets.usr, secrets.pwd)
+    
+    def __del__(self):
+        print("self.__del__()")
+        b = bytearray("{EEEE}", 'utf-8')
+        self._uarttime.write(b)
+        time.sleep(2)
+        self._colons.extend(True, True)
+
+    def connectWifi(self, conf):
+        connected = False
+        while not connected:
+            connected = self._wifi.connectWifi()
+            time.sleep(5)  
+        if connected:
+            self._log.write("Connected to WiFi")
+        else:
+            self._log.write("NOT Connected to WiFi")
+        return connected
+
+    def formathour(self, hour):
+        if hour > 12:
+            hour -= 12
+        if hour == 0:
+            hour = 12
+        h = strhour = "{0:02}".format(hour)
+        if strhour[0] == "0":
+            strhour = "E" + h[1]
+        return strhour
+
+    def setOutdoorTemp(self, conf):
         try:
-            switch.on()
-            time.sleep(1)
-            sensor = DHT11(pin)
-            sensor.measure()
-            temp = round(sensor.temperature)
-            humid = round(sensor.humidity)
-            if temp > 0 and humid > 0:
-                conf.write("tempreading",temp)
-                log.write("tempreading = {0}".format(temp))
-                conf.write("humidreading",humid)
-                log.write("humidreading = {0}".format(humid))
-                switch.off()
-                readtempattempts = 0
-                log.write("Finished recording temp/humid sensor")
+            lat = conf.read("lat")
+            lon = conf.read("lon")
+            r = urequests.get("https://api.open-meteo.com/v1/forecast?latitude={0}&longitude={1}&current_weather=true&hourly=relativehumidity_2m".format(lat,lon))
+            j = json.loads(r.content)
+            temperature = j['current_weather']['temperature']
+            conf.write("tempoutdoor",round(32+(9/5*temperature)))
+            self._log.write("tempoutdoor = {0}".format(round(32+(9/5*temperature))))
+            humidity = j['hourly']['relativehumidity_2m'][0]
+            conf.write("humidoutdoor",humidity)
+            self._log.write("humidoutdoor = {0}".format(humidity))
         except Exception as e:
-            log.write("Exception: {}".format(e))
+            self._log.write("Exception: {}".format(e))
         finally:
-            switch.off()
             time.sleep(1)
-            readtempattempts -=1
+
+    def setIndoorTemp(self,conf):
+        temp = 0
+        humid = 0
+
+        readtempattempts = 5
+        while readtempattempts > 0:
+            try:
+                self._switch.on()
+                time.sleep(1)
+                self._sensor.measure()
+                temp = round(self._sensor.temperature)
+                humid = round(self._sensor.humidity)
+                if temp > 0 and humid > 0:
+                    conf.write("tempreading",temp)
+                    self._log.write("tempreading = {0}".format(temp))
+                    conf.write("humidreading",humid)
+                    self._log.write("humidreading = {0}".format(humid))
+                    self._switch.off()
+                    readtempattempts = 1
+                    self._log.write("Finished recording temp/humid sensor")
+            except Exception as e:
+                self._log.write("Exception: {}".format(e))
+            finally:
+                self._switch.off()
+                readtempattempts -=1
+                time.sleep(1)
 
 def main():
-    baudrate = [9600, 19200, 38400, 57600, 115200]
-    uarttime = machine.UART(0, baudrate[0], tx=machine.Pin(12), rx=machine.Pin(13))
-    uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
-    global log
-    log = logs.logger("sendtime.log", 4096)
-    global pin
-    pin = Pin(20, Pin.OUT, pull=Pin.PULL_DOWN)
-    global switch
-    switch = Pin(2, Pin.OUT,value=0)
-
     try:
-        global currentTime
+        clock = kineticClock()
 
-        conf = config.Config("config.json")
-        setHumidTemp(conf)
-
-        wifi = picowifi.hotspot("Clipper","Orcatini")
-        
-        while not wifi.connectWifi():
-            time.sleep(5)
-        
-        log.write("Connected to WiFi")
         elapsedseconds = 0
         waitforwifi = 0
-        sync = syncRTC.syncRTC()
-        sync.syncclock()
-        currentTime = "{0}{1:02}".format(formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
+        conf = config.Config("config.json")
+
+        if clock.connectWifi(conf):
+            sync = syncRTC.syncRTC()
+            sync.syncclock()
+            currentTime = "{0}{1:02}".format(clock.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])  
+            print("external ip address = {0}".format(sync.externalIPaddress))
+            g = urequests.get("http://ip-api.com/json/{0}".format(sync.externalIPaddress))
+            geo = json.loads(g.content)
+            conf.write("lat",geo['lat'])
+            conf.write("lon",geo['lon'])
+            clock._log.write("lat = {0}".format(geo['lat']))
+            clock._log.write("lon = {0}".format(geo['lon']))
 
         while True:
-            log.write("elapsed seconds = {0}".format(elapsedseconds))
-
-            if (elapsedseconds < elapsedwaitDate) or (elapsedseconds >= elapsedwaitTime):
-                if waitforwifi >= syncWifi:
-                    connectattempts = maxAttempts
-                    while connectattempts > 0:
-                        if wifi.connectWifi():
-                            log.write("Connected to WiFi Hotspot")
-                            log.write("URL: {0}".format(wifi.url))
-                            sync.syncclock()
-                            waitforwifi = 0
-                            break
-                        time.sleep(5)
-                        connectattempts -= 1
-                
-                currentTime = "{0}{1:02}".format(formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
-                b = bytearray(currentTime, 'utf-8')
-                uarttime.write(b)
-                log.write("sent UART = {0}".format(b))
-                time.sleep(2)
-                log.write("currentTime = {0}".format(currentTime))
-                        
-                if elapsedseconds == 0:
+            found = False
+            for i in clock.elapsedDisplayTimeSeconds:
+                if i[1] == 1:
+                    found = True
+            if not found:
+                for i in clock.elapsedDisplayTimeSeconds:
+                    clock.elapsedDisplayTimeSeconds[1][1] = 0
+            #display time
+            if (elapsedseconds > 45) or (elapsedseconds < 15):
+                clock.elapsedDisplayTimeSeconds[displaySecEnum.time][1] = 1
+                clock._log.write("--display time--")
+                clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
+                if waitforwifi >= clock._syncWifi:
+                    sync.syncclock()
+                    time.sleep(1)
+                    waitforwifi = 0
+                else:
                     waitforwifi += 1
+                    clock._log.write("waitforwifi = {0}".format(waitforwifi))
+                
+                currentTime = "{0}{1:02}".format(clock.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
+                b = bytearray(currentTime, 'utf-8')
+                clock._uarttime.write(b)
+                time.sleep(1)
+                clock._colons.extend(True, True)
             
-            if (elapsedseconds >= elapsedwaitDate) and (elapsedseconds < elapsedwaitTemp):
+            #read temp/humid sensor
+            #if (elapsedseconds >= clock._elapsedwaitSyncHumidTemp) and (elapsedseconds < clock._elapsedwaitDate):
+            #    clock._log.write("--reading temp sensor--")
+            #    clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
+            #    clock.setIndoorTemp(conf)
+            #    time.sleep(1)
+            #    clock.setOutdoorTemp(conf)
+            #    while (elapsedseconds < clock._elapsedwaitDate):
+            #        time.sleep(1)
+            #        elapsedseconds = round(sync.rtc.datetime()[6])
+
+            #display date
+            #if (elapsedseconds >= clock._elapsedwaitDate) and (elapsedseconds < clock._elapsedwaitTemp):
+            if clock.elapsedDisplayTimeSeconds[displaySecEnum.date][1] == 0:
+                clock.elapsedDisplayTimeSeconds[displaySecEnum.date][1] = 1
+                clock._log.write("--display date--")
+                clock._log.write("elapsedseconds = {0}".format(elapsedseconds))                
                 currentDate = "{0:02}{1:02}".format(sync.rtc.datetime()[1], sync.rtc.datetime()[2])
                 b = bytearray(currentDate, 'utf-8')
-                uarttime.write(b)
-                log.write("sent UART = {0}".format(b))
-                time.sleep(2)
-                log.write("currentDate = {0}".format(currentTime))
+                clock._uarttime.write(b)
+                time.sleep(1)
+                clock._colons.retract(True, True)
 
-            if (elapsedseconds >= elapsedwaitTemp) and (elapsedseconds < elapsedwaitHumid):
-                temp = conf.read("tempreading")
-                curtemp = "{0:02}AD".format(round((temp*1.8)+32))
-                b = bytearray(curtemp, 'utf-8')                    
-                uarttime.write(b)
-                log.write("sent UART = {0}".format(b))
-                time.sleep(2)
-                log.write("Temperature: {0}".format(curtemp))
+                for i in range(clock.elapsedDisplayTimeSeconds[displaySecEnum.date][0]):
+                    elapsedseconds = round(sync.rtc.datetime()[6])
+                    time.sleep(1)
 
-            if (elapsedseconds >= elapsedwaitHumid) and (elapsedseconds < elapsedwaitTime):
-                humid = conf.read("humidreading")
-                curhumid = "{0}AB".format(humid)
-                b = bytearray(curhumid, 'utf-8')                    
-                uarttime.write(b)
-                log.write("sent UART = {0}".format(b))
-                time.sleep(2)
-                log.write("Humidity: {0}".format(humid))
-                setHumidTemp(conf)
+            #display temp
+            if clock.elapsedDisplayTimeSeconds[displaySecEnum.temp][1] == 0:
+                clock.elapsedDisplayTimeSeconds[displaySecEnum.temp][1] = 1
+                clock._log.write("--display temp--")
+                clock._log.write("elapsedseconds = {0}".format(elapsedseconds))                
+                showIndoorTemp = conf.read("showIndoorTemp")
+                if showIndoorTemp == 1:
+                    temp = conf.read("tempreading")
+                    curtemp = "{0:02}AD".format(round((temp*1.8)+32))
+                    b = bytearray(curtemp, 'utf-8')                    
+                    clock._uarttime.write(b)
+                    time.sleep(1)
+                    clock._colons.extend(True, False)
+                else:
+                    temp = conf.read("tempoutdoor")
+                    curtemp = "{0:02}AD".format(temp)
+                    b = bytearray(curtemp, 'utf-8')                    
+                    clock._uarttime.write(b)
+                    time.sleep(1)
+                    clock._colons.extend(False, True)
+                for i in range(clock.elapsedDisplayTimeSeconds[displaySecEnum.temp][0]):
+                    elapsedseconds = round(sync.rtc.datetime()[6])
+                    time.sleep(1)
+
+            #display humidity
+            if clock.elapsedDisplayTimeSeconds[displaySecEnum.humid][1] == 0:
+                clock.elapsedDisplayTimeSeconds[displaySecEnum.humid][1] = 1
+                clock._log.write("--display humidity--")
+                clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
+                showIndoorTemp = conf.read("showIndoorTemp")
+                if showIndoorTemp == 1:
+                    humid = conf.read("humidreading")
+                    curhumid = "{0}AB".format(humid)
+                    b = bytearray(curhumid, 'utf-8')                    
+                    clock._uarttime.write(b)
+                    time.sleep(1)
+                    clock._colons.extend(True, False)
+                    conf.write("showIndoorTemp",0)
+                else:
+                    temp = conf.read("humidoutdoor")
+                    curtemp = "{0:02}AB".format(temp)
+                    b = bytearray(curtemp, 'utf-8')                    
+                    clock._uarttime.write(b)
+                    #log.write("sent UART = {0}".format(b))
+                    time.sleep(1)
+                    clock._colons.extend(False, True)
+                    conf.write("showIndoorTemp",1)
+                for i in range(clock.elapsedDisplayTimeSeconds[displaySecEnum.humid][0]):
+                    elapsedseconds = round(sync.rtc.datetime()[6])
+                    time.sleep(1)
+
             elapsedseconds = round(sync.rtc.datetime()[6])
+            print("elapsedseconds = {0}".format(elapsedseconds))
+            time.sleep(1)
 
     except KeyboardInterrupt:
         print('KeyboardInterrupt')

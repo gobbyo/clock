@@ -3,7 +3,7 @@ from dht11 import DHT11
 import time
 
 def main():
-    switch = Pin(2, Pin.OUT, pull=None)
+    switch = Pin(0, Pin.OUT, pull=None)
     read_sensor = True
 
     while read_sensor:

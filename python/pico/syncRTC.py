@@ -1,33 +1,27 @@
-from machine import Pin, RTC, PWM
+from machine import RTC
 import network, rp2
 import urequests
 import json
 import time
 
+externalIPAddressAPI=const("http://api.ipify.org")
 class syncRTC:
-    connectedLED_pin = 28
-    disconnectedLED_pin = 27
-    ledlumins = int(65535/3) #1/3 of total brightness
 
     def __init__(self):
         self.rtc = RTC()
         self.externalIPaddress = "00.000.000.000"
-        self.red_led = PWM(Pin(self.disconnectedLED_pin, Pin.OUT))
-        self.green_led = PWM(Pin(self.connectedLED_pin, Pin.OUT))
-        self.red_led.freq(1000)
-        self.green_led.freq(1000)
-        self.red_led.duty_u16(0)
-        self.green_led.duty_u16(0)
         rp2.country('US') # ISO 3166-1 Alpha-2 code, eg US, GB, DE, AU
 
     def syncclock(self):
         print("Sync clock")
+        returnval = True
 
         try:
             print("Obtaining external IP Address")
-            externalIPaddress = urequests.request('GET','https://api.ipify.org')
-            print("Obtained external IP Address: {0}".format(externalIPaddress.text))
-            timeAPI = "https://www.timeapi.io/api/Time/current/ip?ipAddress={0}".format(externalIPaddress.text)
+            ipaddress = urequests.get(externalIPAddressAPI)
+            self.externalIPaddress = ipaddress.text
+            print("Obtained external IP Address: {0}".format(self.externalIPaddress))
+            timeAPI = "https://www.timeapi.io/api/Time/current/ip?ipAddress={0}".format(self.externalIPaddress)
             r = urequests.get(timeAPI)
             z = json.loads(r.content)
             timeAPI = "https://www.timeapi.io/api/TimeZone/zone?timeZone={0}".format(z["timeZone"])
@@ -40,30 +34,19 @@ class syncRTC:
             self.rtc.datetime((int(z["year"]), int(z["month"]), int(z["day"]), 0, int(t[0]), int(t[1]), int(z["seconds"]), 0))
         except Exception as e:
             print("Exception: {}".format(e))
-            print("Unable to obtain external IP Address")
-            time.sleep(1)
-            self.red_led.duty_u16(0)
-            time.sleep(1)
-            self.red_led.duty_u16(self.ledlumins)
-            return False
+            returnval = False
         finally:
-            self.green_led.duty_u16(self.ledlumins)
-            self.red_led.duty_u16(0)
+            return returnval
 
     def __del__(self):
-        self.red_led.duty_u16(0)
-        self.green_led.duty_u16(0)
         urequests.Response.close()
         #machine.reset()
 
     def connectWiFi(self, ssid, pwd):
-        # Red LED indicates we're in the process of connecting to WiFi
-        # Green LED indicates we've successfully synced the clock
-        self.green_led.duty_u16(0)
-        self.red_led.duty_u16(self.ledlumins)
         try:
             wlan = network.WLAN(network.STA_IF)
             wlan.active(True)
+            # set power mode to get WiFi power-saving off (if needed)
             wlan.config(pm = 0xa11140)
             #print("Connecting to WiFi, ssid={0}, pwd={1}".format(secrets.ssid, secrets.pwd))
             wlan.connect(ssid, pwd)
@@ -74,15 +57,11 @@ class syncRTC:
 
         except:
             print("Unable to connect to WiFi")
-            return False
         finally:
             if(wlan.isconnected()):
                 print("WiFi Connected")
                 print(wlan.ifconfig())
-                self.green_led.duty_u16(self.ledlumins)
                 time.sleep(1)
-                self.red_led.duty_u16(0)
-                self.green_led.duty_u16(0)
                 return True
             else:
                 print("Unable to connect to WiFi")

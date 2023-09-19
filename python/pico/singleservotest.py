@@ -2,11 +2,11 @@ from servo import sg90
 import time
 
 def main():
-    servo = sg90(28)
+    servo = sg90(6)
     try:
-        servo.move(0)
+        servo.move(20)
         time.sleep(1)
-        servo.move(90)
+        servo.move(100)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:

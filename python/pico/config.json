@@ -1,9 +1,15 @@
-{  
-    "temp":"on",
-    "tempreading":0,
-    "tunit":"f",
-    "humid":"on",
-    "humidreading":0,
-    "military":"off",
-    "synctime":"1030"
+{
+    "humid": "on", 
+    "temp": "on", 
+    "humidreading": 63, 
+    "humidoutdoor": 0,
+    "tempreading": 20,
+    "tempoutdoor": 0,
+    "military": "off", 
+    "colonstate": [true, true]
+    "synctime": "1030", 
+    "tunit": "f",
+    "showIndoorTemp": 1,
+    "lat": "0",
+    "lon": "0"
 }

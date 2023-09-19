@@ -74,6 +74,8 @@ class hotspot:
     def connectWifi(self):
         wifi = network.WLAN(network.STA_IF)
         wifi.active(True)
+        # set power mode to get WiFi power-saving off (if needed)
+        wifi.config(pm = 0xa11140)
         print('self.hotspotssid={0},self.hotspotpassword={1}'.format(self.hotspotssid,self.hotspotpassword))
         wifi.connect(self.hotspotssid,self.hotspotpassword)
         print('wifi.isconnected({0})'.format(wifi.isconnected()))
