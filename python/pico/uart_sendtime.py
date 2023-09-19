@@ -15,29 +15,20 @@ tempswitchpin = const(0)
 uartTxPin = const(12)
 uartRxPin = const(13)
 
-
-class displaySecEnum():
-    date = 0
-    temp = 1
-    humid = 2
-    time = 3
-
 class kineticClock():
     def __init__(self) -> None:
         print("self.__init__()")
 
         baudrate = [9600, 19200, 38400, 57600, 115200]
 
-        self.elapsedDisplayTimeSeconds = [[10,0],[10,0],[10,0],[30,0]]
-        self.dailySyncTimeMinutes = { 'indoorTemp': [5,0], 'outdoorTemp': [5,0], 'wifi': [15,0]}
         self._maxAttemps = 2
         self._syncWifi = 60 #minutes
         self._dailySyncTime = "1200"  #default
         self._elapsedwaitSyncHumidTemp = 0 #seconds
-        self._elapsedwaitDate = 15 #seconds
-        self._elapsedwaitTemp = 25 #seconds
-        self._elapsedwaitHumid = 35 #seconds
-        self._elapsedwaitTime = 45 #seconds
+        self._elapsedwaitDate = 20 #seconds
+        self._elapsedwaitTemp = 30 #seconds
+        self._elapsedwaitHumid = 40 #seconds
+        self._elapsedwaitTime = 50 #seconds
 
         self._uarttime = machine.UART(0, baudrate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
         self._uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
@@ -141,47 +132,33 @@ def main():
             clock._log.write("lon = {0}".format(geo['lon']))
 
         while True:
-            found = False
-            for i in clock.elapsedDisplayTimeSeconds:
-                if i[1] == 1:
-                    found = True
-            if not found:
-                for i in clock.elapsedDisplayTimeSeconds:
-                    clock.elapsedDisplayTimeSeconds[1][1] = 0
             #display time
-            if (elapsedseconds > 45) or (elapsedseconds < 15):
-                clock.elapsedDisplayTimeSeconds[displaySecEnum.time][1] = 1
+            if (elapsedseconds > clock._elapsedwaitTime) or (elapsedseconds < clock._elapsedwaitSyncHumidTemp):
                 clock._log.write("--display time--")
                 clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
-                if waitforwifi >= clock._syncWifi:
-                    sync.syncclock()
-                    time.sleep(1)
-                    waitforwifi = 0
-                else:
-                    waitforwifi += 1
-                    clock._log.write("waitforwifi = {0}".format(waitforwifi))
-                
                 currentTime = "{0}{1:02}".format(clock.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
                 b = bytearray(currentTime, 'utf-8')
                 clock._uarttime.write(b)
                 time.sleep(1)
                 clock._colons.extend(True, True)
+                
+                while elapsedseconds < 15:
+                    elapsedseconds = round(sync.rtc.datetime()[6])
+                    time.sleep(1)
             
             #read temp/humid sensor
-            #if (elapsedseconds >= clock._elapsedwaitSyncHumidTemp) and (elapsedseconds < clock._elapsedwaitDate):
-            #    clock._log.write("--reading temp sensor--")
-            #    clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
-            #    clock.setIndoorTemp(conf)
-            #    time.sleep(1)
-            #    clock.setOutdoorTemp(conf)
-            #    while (elapsedseconds < clock._elapsedwaitDate):
-            #        time.sleep(1)
-            #        elapsedseconds = round(sync.rtc.datetime()[6])
+            if (elapsedseconds >= clock._elapsedwaitSyncHumidTemp) and (elapsedseconds < clock._elapsedwaitDate):
+                clock._log.write("--reading temp sensor--")
+                clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
+                clock.setIndoorTemp(conf)
+                time.sleep(1)
+                clock.setOutdoorTemp(conf)
+                while (elapsedseconds < clock._elapsedwaitDate):
+                    time.sleep(1)
+                    elapsedseconds = round(sync.rtc.datetime()[6])
 
             #display date
-            #if (elapsedseconds >= clock._elapsedwaitDate) and (elapsedseconds < clock._elapsedwaitTemp):
-            if clock.elapsedDisplayTimeSeconds[displaySecEnum.date][1] == 0:
-                clock.elapsedDisplayTimeSeconds[displaySecEnum.date][1] = 1
+            if (elapsedseconds >= clock._elapsedwaitDate) and (elapsedseconds < clock._elapsedwaitTemp):
                 clock._log.write("--display date--")
                 clock._log.write("elapsedseconds = {0}".format(elapsedseconds))                
                 currentDate = "{0:02}{1:02}".format(sync.rtc.datetime()[1], sync.rtc.datetime()[2])
@@ -190,13 +167,12 @@ def main():
                 time.sleep(1)
                 clock._colons.retract(True, True)
 
-                for i in range(clock.elapsedDisplayTimeSeconds[displaySecEnum.date][0]):
-                    elapsedseconds = round(sync.rtc.datetime()[6])
+                while (elapsedseconds < clock._elapsedwaitTemp):
                     time.sleep(1)
+                    elapsedseconds = round(sync.rtc.datetime()[6])
 
             #display temp
-            if clock.elapsedDisplayTimeSeconds[displaySecEnum.temp][1] == 0:
-                clock.elapsedDisplayTimeSeconds[displaySecEnum.temp][1] = 1
+            if (elapsedseconds >= clock._elapsedwaitTemp) and (elapsedseconds < clock._elapsedwaitHumid):
                 clock._log.write("--display temp--")
                 clock._log.write("elapsedseconds = {0}".format(elapsedseconds))                
                 showIndoorTemp = conf.read("showIndoorTemp")
@@ -214,13 +190,12 @@ def main():
                     clock._uarttime.write(b)
                     time.sleep(1)
                     clock._colons.extend(False, True)
-                for i in range(clock.elapsedDisplayTimeSeconds[displaySecEnum.temp][0]):
-                    elapsedseconds = round(sync.rtc.datetime()[6])
+                while (elapsedseconds < clock._elapsedwaitHumid):
                     time.sleep(1)
+                    elapsedseconds = round(sync.rtc.datetime()[6])
 
             #display humidity
-            if clock.elapsedDisplayTimeSeconds[displaySecEnum.humid][1] == 0:
-                clock.elapsedDisplayTimeSeconds[displaySecEnum.humid][1] = 1
+            if (elapsedseconds >= clock._elapsedwaitHumid) and (elapsedseconds < clock._elapsedwaitTime):
                 clock._log.write("--display humidity--")
                 clock._log.write("elapsedseconds = {0}".format(elapsedseconds))
                 showIndoorTemp = conf.read("showIndoorTemp")
@@ -241,9 +216,9 @@ def main():
                     time.sleep(1)
                     clock._colons.extend(False, True)
                     conf.write("showIndoorTemp",1)
-                for i in range(clock.elapsedDisplayTimeSeconds[displaySecEnum.humid][0]):
-                    elapsedseconds = round(sync.rtc.datetime()[6])
+                while (elapsedseconds < clock._elapsedwaitTime):
                     time.sleep(1)
+                    elapsedseconds = round(sync.rtc.datetime()[6])
 
             elapsedseconds = round(sync.rtc.datetime()[6])
             print("elapsedseconds = {0}".format(elapsedseconds))
