@@ -19,7 +19,7 @@ class syncRTC:
         try:
             print("Obtaining external IP Address")
             ipaddress = urequests.get(externalIPAddressAPI)
-            self.externalIPaddress = ipaddress.text
+            self.externalIPaddress = ipaddress.content.decode("utf-8")
             print("Obtained external IP Address: {0}".format(self.externalIPaddress))
             timeAPI = "https://www.timeapi.io/api/Time/current/ip?ipAddress={0}".format(self.externalIPaddress)
             r = urequests.get(timeAPI)
