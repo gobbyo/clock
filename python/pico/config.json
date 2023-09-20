@@ -1,15 +1,14 @@
 {
-    "humid": "on", 
-    "temp": "on", 
-    "humidreading": 63, 
-    "humidoutdoor": 0,
-    "tempreading": 20,
-    "tempoutdoor": 0,
-    "military": "off", 
-    "colonstate": [true, true]
-    "synctime": "1030", 
+    "colonstate": [false, false], 
+    "showIndoorTemp": 1, 
+    "tempHumidMinuteSchedule": 5, 
+    "wifiHourlySchedule": 4, 
+    "displayMilitaryTime": false, 
     "tunit": "f",
-    "showIndoorTemp": 1,
-    "lat": "0",
-    "lon": "0"
+    "lat": 47.626,
+    "lon": -122.0404, 
+    "humidreading": 63,
+    "tempreading": 20, 
+    "humidoutdoor": 46, 
+    "tempoutdoor": 65
 }

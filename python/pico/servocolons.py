@@ -1,7 +1,6 @@
 from machine import Pin
 from servo import sg90
 import time
-import config
 
 class servoColonsDisplay:
     _segpins = [2,3] # upper, lower
@@ -16,8 +15,9 @@ class servoColonsDisplay:
     _leds = []
     _conf = None
 
-    def __init__(self):
+    def __init__(self, conf):
         #print("servoColonsDisplay constructor")
+        self._conf = conf
         for i in self._segpins:
             self._servos.append(sg90(i))
         for i in self._switchpins:
@@ -25,22 +25,22 @@ class servoColonsDisplay:
         for i in range(0,len(self._ledpins)):
             self._leds.append(Pin(self._ledpins[i], Pin.OUT))
             self._leds[i].off()
-        self._conf = config.Config("config.json")
+        #self._conf = config.Config("config.json")
 
     def __del__(self):
         self.paintNumber(0x0E)
         for led in self._leds:
             led.off()
-        print("servoColonsDisplay destructor")
+        #print("servoColonsDisplay destructor")
 
     def extend(self, upper, lower):
         colonstate = self._conf.read("colonstate")
-        print("extend colons")
+        #print("extend colons")
         for i in range(len(self._servos)):
             if ( i == 0 and upper == True) or (i == 1 and lower == True):
                 if not colonstate[i]:
                     self._switches[i].on()
-                    print("servo {0} move {1}".format(i,self._extendAngles[i]))
+                    #print("servo {0} move {1}".format(i,self._extendAngles[i]))
                     self._servos[i].move(self._extendAngles[i])
                     time.sleep(self._servowait)
                     self._switches[i].off()
@@ -50,13 +50,13 @@ class servoColonsDisplay:
 
     def retract(self, upper, lower):
         colonstate = self._conf.read("colonstate")
-        print("retract colons, colonstate={0}".format(colonstate))
+        #print("retract colons, colonstate={0}".format(colonstate))
         for i in range(len(self._servos)):
             if (i == 0 and upper == True) or (i == 1 and lower == True):
                 if colonstate[i]:
                     self._leds[i].off()
                     self._switches[i].on() 
-                    print("servo {0} move {1}".format(i,self._extendAngles[i]))
+                    #print("servo {0} move {1}".format(i,self._extendAngles[i]))
                     self._servos[i].move(self._retractAngles[i])
                     time.sleep(self._servowait)
                     self._switches[i].off()

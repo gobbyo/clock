@@ -5,10 +5,11 @@ import config
 import logs
 
 #change this to hour_tens, hour_ones, minute_tens, or minute_ones
-hour_tens = 0
-hour_ones = 1
-minute_tens = 2
-minute_ones = 3
+class hourMinutesEnum():
+    hour_tens = 0
+    hour_ones = 1
+    minute_tens = 2
+    minute_ones = 3
 
 uartsignalpausetime = 1 #seconds
 
