@@ -14,11 +14,18 @@ class timeEnum():
     seconds = 6
     subseconds = 7
 
+
+    
 def main():
     conf = config.Config("config.json")
     clock = kineticClock.kineticClock(conf)
 
     try:
+        elapsedwaitDate = 20 #seconds
+        elapsedwaitTemp = 30 #seconds
+        elapsedwaitHumid = 40 #seconds
+        elapsedwaitTime = 50 #seconds
+
         displayMilitaryTime = conf.read("displayMilitaryTime")
         wifiHourlySchedule = conf.read("wifiHourlySchedule")
         tempHumidMinuteSchedule = conf.read("tempHumidMinuteSchedule")
@@ -43,8 +50,8 @@ def main():
 
         while True:
             #display time
-            if (elapsedseconds > clock._elapsedwaitTime) or (elapsedseconds < clock._elapsedwaitSyncHumidTemp):
-                clock.displayTime(clock._sync)
+            if (elapsedseconds > elapsedwaitTime) or (elapsedseconds < elapsedwaitDate):
+                clock.displayTime(clock._sync, displayMilitaryTime)
                 print("elapsedmins = {0}, elapsedseconds = {1}".format(clock._sync.rtc.datetime()[timeEnum.minutes], elapsedseconds))
                 
                 #sensor measurement
@@ -56,7 +63,7 @@ def main():
                     time.sleep(1)
                     clock.setOutdoorTemp(conf)
                     time.sleep(2)
-                while elapsedseconds < clock._elapsedwaitSyncHumidTemp:
+                while elapsedseconds < elapsedwaitDate:
                     elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
                     time.sleep(1)
                 
@@ -68,26 +75,26 @@ def main():
                         clock.syncClock(conf)
             
             #display date
-            if (elapsedseconds >= clock._elapsedwaitDate) and (elapsedseconds < clock._elapsedwaitTemp):
+            if (elapsedseconds >= elapsedwaitDate) and (elapsedseconds < elapsedwaitTemp):
                 clock.displayDate()
                 print("elapsedseconds = {0}".format(elapsedseconds))                
-                while (elapsedseconds < clock._elapsedwaitTemp):
+                while (elapsedseconds < elapsedwaitTemp):
                     time.sleep(1)
                     elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
 
             #display temp
-            if (elapsedseconds >= clock._elapsedwaitTemp) and (elapsedseconds < clock._elapsedwaitHumid):
+            if (elapsedseconds >= elapsedwaitTemp) and (elapsedseconds < elapsedwaitHumid):
                 clock.displayTemp(conf)
                 print("elapsedseconds = {0}".format(elapsedseconds))                
-                while (elapsedseconds < clock._elapsedwaitHumid):
+                while (elapsedseconds < elapsedwaitHumid):
                     time.sleep(1)
                     elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
 
             #display humidity
-            if (elapsedseconds >= clock._elapsedwaitHumid) and (elapsedseconds < clock._elapsedwaitTime):
+            if (elapsedseconds >= elapsedwaitHumid) and (elapsedseconds < elapsedwaitTime):
                 clock.displayHumidity(conf)
                 print("elapsedseconds = {0}".format(elapsedseconds))
-                while (elapsedseconds < clock._elapsedwaitTime):
+                while (elapsedseconds < elapsedwaitTime):
                     time.sleep(1)
                     elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
 

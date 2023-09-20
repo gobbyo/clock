@@ -1,6 +1,6 @@
 {
     "colonstate": [false, false], 
-    "showIndoorTemp": 1, 
+    "displayIndoorTemp": 1, 
     "tempHumidMinuteSchedule": 5, 
     "wifiHourlySchedule": 4, 
     "displayMilitaryTime": false, 
