@@ -1,4 +1,4 @@
-from servodisplay import servoDigitDisplay
+from servodisplay_new import servoDigitDisplay
 import config
 import time
 import machine
