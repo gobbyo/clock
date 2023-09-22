@@ -4,5 +4,6 @@
     "extend": [20, 10, 10, 10, 10, 15, 20], 
     "current": 0, 
     "retract": [105, 100, 100, 110, 100, 100, 110],
-    "digit": 0
+    "digit": 0,
+    "fastspeed": false
 }

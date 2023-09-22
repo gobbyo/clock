@@ -1,15 +1,21 @@
-from servodisplay_new import servoDigitDisplay
+from servodisplay import servoDigitDisplay
 import config
 import time
 import machine
+
+paintFast = False
 
 def updateDigit(digit,conf):
     prev = conf.read("previous")
     digit.setpreviousNumber(prev)
 
     i = conf.read("current")
-    digit.paintNumber(i)
-    print("Number {0}".format(i))
+    print("Current Number {0}".format(i))
+    if paintFast:
+        digit.paintFastNumber(i)
+    else:
+        digit.paintSlowNumber(i)
+    print("Previous Number {0}".format(i))
     conf.write("previous",i)
 
     i += 1

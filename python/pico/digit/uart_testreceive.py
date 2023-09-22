@@ -12,12 +12,12 @@ def main():
         uart2.init(baudrate[0], bits=8, parity=None, stop=1)
         while True:
             if uart1.any():
-                b = bytearray('0000', 'utf-8')
+                b = bytearray('000000', 'utf-8')
                 uart1.readinto(b)
                 t = b.decode('utf-8')
                 print(t)
             if uart2.any():
-                b = bytearray('0000', 'utf-8')
+                b = bytearray('000000', 'utf-8')
                 uart2.readinto(b)
                 t = b.decode('utf-8')
                 print(t)        

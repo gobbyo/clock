@@ -36,14 +36,17 @@ def validUART(value):
             return False
     return True
 
-def updateDigit(digit,conf):
+def updateDigit(digit,conf,fastspeed):
     prev = conf.read("previous")
     digit.setpreviousNumber(prev)
 
     i = conf.read("current")
-    digit.paintNumber(i)
-    print("Number {0}".format(i))
+    if fastspeed:
+        digit.paintFastNumber(i)
+    else:
+        digit.paintSlowNumber(i)
 
+    print("Number {0}".format(i))
     conf.write("previous",i)
 
     i += 1
@@ -62,11 +65,12 @@ def main():
     conf = config.Config("digit.json")
     extend = conf.read("extend")
     retract = conf.read("retract")
+    fastspeed = conf.read("fastspeed")
     digitdisplay = conf.read("digit")
     log.write("read digit.json file")
 
     digit = servoDigitDisplay()
-    digit.paintNumber(0x0E)
+    digit.paintFastNumber(0x0E)
 
     for i in range(0,7):
         digit._extendAngles[i] = extend[i]
@@ -83,10 +87,10 @@ def main():
             log.write("uart.any() = {0}".format(s))
 
             if s > 0:
-                b = bytearray('0000', 'utf-8')
+                b = bytearray('000000', 'utf-8')
                 uart.readinto(b)
 
-                if s == 4:
+                if s == 6:
                     t = str(b.decode('utf-8'))
                     if validUART(t):
                         log.write("raw decode = {0}".format(t))
@@ -94,7 +98,7 @@ def main():
                         conf.write("current",n)
                         log.write("current = {0}, previous = {1}".format(n,prev))
                         if prev != n:
-                            updateDigit(digit,conf)
+                            updateDigit(digit,conf,fastspeed)
                             prev = n
             time.sleep(uartsignalpausetime)
     except KeyboardInterrupt:
