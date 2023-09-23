@@ -21,10 +21,10 @@ def main():
     clock = kineticClock.kineticClock(conf)
 
     try:
-        elapsedwaitDate = 20 #seconds
-        elapsedwaitTemp = 30 #seconds
-        elapsedwaitHumid = 40 #seconds
-        elapsedwaitTime = 50 #seconds
+        elapsedwaitDate = 10 #seconds
+        elapsedwaitTemp = 25 #seconds
+        elapsedwaitHumid = 35 #seconds
+        elapsedwaitTime = 45 #seconds
 
         displayMilitaryTime = conf.read("displayMilitaryTime")
         wifiHourlySchedule = conf.read("wifiHourlySchedule")
@@ -46,7 +46,7 @@ def main():
             print("lon = {0}".format(geo['lon']))
         
         nexttemphumidschedule = 0
-        nextwifischedule = (clock._sync.rtc.datetime()[timeEnum.hours] + wifiHourlySchedule)%24 #hours
+        nextwifischedule = (round((clock._sync.rtc.datetime()[timeEnum.hours]/12)) + wifiHourlySchedule)%24 #hours
 
         while True:
             #display time
@@ -68,8 +68,10 @@ def main():
                     time.sleep(1)
                 
                 #wifi and time sync
-                if nextwifischedule <= clock._sync.rtc.datetime()[timeEnum.hours]:
-                    nextwifischedule = (clock._sync.rtc.datetime()[timeEnum.hours] + wifiHourlySchedule)%24 #hours
+                if nextwifischedule == clock._sync.rtc.datetime()[timeEnum.hours]:
+                    print("wifischedule = {0}".format(nextwifischedule))
+                    nextwifischedule = (round((clock._sync.rtc.datetime()[timeEnum.hours]/12)) + wifiHourlySchedule)%24 #hours
+                    print("nextwifischedule = {0}".format(nextwifischedule))
                     print("--wifi and time sync--")
                     if clock.connectWifi(conf):
                         clock.syncClock(conf)

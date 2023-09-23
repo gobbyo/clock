@@ -117,61 +117,63 @@ class kineticClock():
 
     def displayTime(self, sync, militaryTime):
         print("kineticClock.displayTime()")
+        self._colons.extend(True, True)
         currentTime = "40{0}{1:02}".format(self.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
         print("currentTime = {0}".format(currentTime))
         b = bytearray(currentTime, 'utf-8')
         self._uarttime.write(b)
         time.sleep(1)
-        self._colons.extend(True, True)
     
     def displayDate(self):
-        print("kineticClock.displayDate()")               
+        print("kineticClock.displayDate()")   
+        self._colons.retract(True, True)            
         currentDate = "40{0:02}{1:02}".format(self._sync.rtc.datetime()[1], self._sync.rtc.datetime()[2])
         print("currentDate = {0}".format(currentDate))
         b = bytearray(currentDate, 'utf-8')
         self._uarttime.write(b)
         time.sleep(1)
-        self._colons.retract(True, True)
     
     def displayTemp(self,conf):
         print("kineticClock.displayTemp()")
         displayIndoorTemp = conf.read("displayIndoorTemp")
         if displayIndoorTemp == 1:
+            self._colons.extend(True, False)
             temp = conf.read("tempreading")
             curtemp = "40{0:02}AD".format(round((temp*1.8)+32))
             print("indoor temp = {0}".format(curtemp))
             b = bytearray(curtemp, 'utf-8')                    
             self._uarttime.write(b)
             time.sleep(1)
-            self._colons.extend(True, False)
+
         else:
+            self._colons.extend(False, True)
             temp = conf.read("tempoutdoor")
             curtemp = "40{0:02}AD".format(temp)
             print("outdoor temp = {0}".format(curtemp))
             b = bytearray(curtemp, 'utf-8')                    
             self._uarttime.write(b)
             time.sleep(1)
-            self._colons.extend(False, True)
+
 
     def displayHumidity(self, conf):
         print("kineticClock.displayHumidity()")
         displayIndoorTemp = conf.read("displayIndoorTemp")
         if displayIndoorTemp == 1:
             h = conf.read("humidreading")
+            self._colons.extend(True, False)
             curhumid = "40{0}AB".format(h)
             print("indoor humidity = {0}".format(curhumid))
             b = bytearray(curhumid, 'utf-8')                    
             self._uarttime.write(b)
             time.sleep(1)
-            self._colons.extend(True, False)
             conf.write("displayIndoorTemp",0)
         else:
             h = conf.read("humidoutdoor")
+            self._colons.extend(False, True)
             curhumid = "40{0:02}AB".format(h)
             print("outdoor humidity = {0}".format(curhumid))
             b = bytearray(curhumid, 'utf-8')                    
             self._uarttime.write(b)
             #log.write("sent UART = {0}".format(b))
             time.sleep(1)
-            self._colons.extend(False, True)
             conf.write("displayIndoorTemp",1)
