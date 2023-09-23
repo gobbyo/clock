@@ -28,11 +28,11 @@ def decodeHex(value):
     return int(returnval)
 
 def validUART(value):
-    if len(value) != 4:
+    if len(value) != 6:
         return False
     for d in value:
         i = decodeHex(d)
-        if (i < 0) or (i > 14):
+        if (i < 0) or (i > 15):
             return False
     return True
 
@@ -83,23 +83,22 @@ def main():
         prev = -1
         
         while True:
-            s = uart.any()
+            i = uart.any()
             log.write("uart.any() = {0}".format(s))
 
-            if s > 0:
-                b = bytearray('000000', 'utf-8')
+            if i > 0:
+                b = bytearray('0000', 'utf-8')
                 uart.readinto(b)
+                t = str(b.decode('utf-8'))
 
-                if s == 6:
-                    t = str(b.decode('utf-8'))
-                    if validUART(t):
-                        log.write("raw decode = {0}".format(t))
-                        n = decodeHex(t[digitdisplay])
-                        conf.write("current",n)
-                        log.write("current = {0}, previous = {1}".format(n,prev))
-                        if prev != n:
-                            updateDigit(digit,conf,fastspeed)
-                            prev = n
+                if validUART(t):
+                    log.write("raw decode = {0}".format(t))
+                    n = decodeHex(t[digitdisplay])
+                    conf.write("current",n)
+                    log.write("current = {0}, previous = {1}".format(n,prev))
+                    if prev != n:
+                        updateDigit(digit,conf,fastspeed)
+                        prev = n
             time.sleep(uartsignalpausetime)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')

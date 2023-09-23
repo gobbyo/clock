@@ -30,10 +30,12 @@ class kineticClock():
     
     def __del__(self):
         print("kineticClock.__del__()")
-        b = bytearray("{EEEE}", 'utf-8')
+        b = bytearray('40EEEE', 'utf-8')
         self._uarttime.write(b)
         time.sleep(1)
         self._colons.retract(True, True)
+        b = bytearray('1FFFFF', 'utf-8')
+        self._uarttime.write(b)
         time.sleep(2)
 
     def connectWifi(self, conf):
@@ -115,7 +117,7 @@ class kineticClock():
 
     def displayTime(self, sync, militaryTime):
         print("kineticClock.displayTime()")
-        currentTime = "{0}{1:02}".format(self.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
+        currentTime = "40{0}{1:02}".format(self.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
         print("currentTime = {0}".format(currentTime))
         b = bytearray(currentTime, 'utf-8')
         self._uarttime.write(b)
@@ -124,7 +126,7 @@ class kineticClock():
     
     def displayDate(self):
         print("kineticClock.displayDate()")               
-        currentDate = "{0:02}{1:02}".format(self._sync.rtc.datetime()[1], self._sync.rtc.datetime()[2])
+        currentDate = "40{0:02}{1:02}".format(self._sync.rtc.datetime()[1], self._sync.rtc.datetime()[2])
         print("currentDate = {0}".format(currentDate))
         b = bytearray(currentDate, 'utf-8')
         self._uarttime.write(b)
@@ -136,7 +138,7 @@ class kineticClock():
         displayIndoorTemp = conf.read("displayIndoorTemp")
         if displayIndoorTemp == 1:
             temp = conf.read("tempreading")
-            curtemp = "{0:02}AD".format(round((temp*1.8)+32))
+            curtemp = "40{0:02}AD".format(round((temp*1.8)+32))
             print("indoor temp = {0}".format(curtemp))
             b = bytearray(curtemp, 'utf-8')                    
             self._uarttime.write(b)
@@ -144,7 +146,7 @@ class kineticClock():
             self._colons.extend(True, False)
         else:
             temp = conf.read("tempoutdoor")
-            curtemp = "{0:02}AD".format(temp)
+            curtemp = "40{0:02}AD".format(temp)
             print("outdoor temp = {0}".format(curtemp))
             b = bytearray(curtemp, 'utf-8')                    
             self._uarttime.write(b)
@@ -156,7 +158,7 @@ class kineticClock():
         displayIndoorTemp = conf.read("displayIndoorTemp")
         if displayIndoorTemp == 1:
             h = conf.read("humidreading")
-            curhumid = "{0}AB".format(h)
+            curhumid = "40{0}AB".format(h)
             print("indoor humidity = {0}".format(curhumid))
             b = bytearray(curhumid, 'utf-8')                    
             self._uarttime.write(b)
@@ -165,7 +167,7 @@ class kineticClock():
             conf.write("displayIndoorTemp",0)
         else:
             h = conf.read("humidoutdoor")
-            curhumid = "{0:02}AB".format(h)
+            curhumid = "40{0:02}AB".format(h)
             print("outdoor humidity = {0}".format(curhumid))
             b = bytearray(curhumid, 'utf-8')                    
             self._uarttime.write(b)

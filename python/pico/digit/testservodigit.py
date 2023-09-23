@@ -3,15 +3,15 @@ import config
 import time
 import machine
 
-paintFast = False
-
 def updateDigit(digit,conf):
     prev = conf.read("previous")
     digit.setpreviousNumber(prev)
 
     i = conf.read("current")
     print("Current Number {0}".format(i))
-    if paintFast:
+    motion = conf.read("motion")
+    print("Motion {0}".format(motion))
+    if motion == 0:
         digit.paintFastNumber(i)
     else:
         digit.paintSlowNumber(i)

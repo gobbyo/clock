@@ -9,7 +9,7 @@ class servoDigitDisplay:
     _extendAngles = [0,0,0,0,0,0,0]
     _retractAngles = [90,90,90,90,90,90,90]
     _rateofmovement = 3 #degrees
-    _servospeed = 0.05 #default servo speed
+    _servospeed = 0.03 #default servo speed
     _servowait = 0.4
     # 0 = 	0011 1111   0x3F
     # 1 =	0000 0110   0x06
@@ -145,13 +145,13 @@ class servoDigitDisplay:
             if result[i] == 1:
                 print("extend complete {0}".format(i))
                 self._servos[i].move(extendAngles[i]) #finish any leftover
-                time.sleep(.1)
+                time.sleep(.3)
                 self._switches[i].off()
 
             if result[i] == 0:
                 print("retract complete {0}".format(i))
                 self._servos[i].move(retractAngles[i]) #finish any leftover
-                time.sleep(.1)
+                time.sleep(.3)
                 self._switches[i].off()
         
         for i in range(len(result)):

@@ -4,9 +4,9 @@ import time
 def main():
     servo = sg90(0)
     try:
-        servo.move(0)
-        time.sleep(1)
         servo.move(90)
+        time.sleep(1)
+        servo.move(15)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:

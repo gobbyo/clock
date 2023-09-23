@@ -1,3 +1,10 @@
+# Each digit is assigned a number, 0-3, with 0 being the leftmost digit 
+# and 3 being the rightmost digit when facing the clock.
+class hourMinutesEnum():
+    hour_tens = 0
+    hour_ones = 1
+    minute_tens = 2
+    minute_ones = 3
 
 # This file contains the enum for the UART commands
 # Commands are used to set the time and configuration of the servoDigitDisplay
@@ -24,80 +31,58 @@
 # 3rd-6th characters are the data to be used for the command.
 class uartCommandEnum():
     time = 0
-    fastspeed = 1
-    slowspeed = 2
-    retract = 3
-    extend = 4
-    current = 5
-    previous = 6
-    reset = "F"
+    motion = 1
+    retract = 2
+    extend = 3
+    current = 4
+    previous = 5
+    reset = 0x0F
 
 #time setting for all digits
 #digit | command | 0 | 1 | 2 | 3 |
 #---------------------------------
 #  4  | "0" | "0" | "7" | "4" | "9" |
 
-#fastspeed setting for all digits
+#motion setting for all digits
 #digit | command | 0 | 1 | 2 | 3 |
 #---------------------------------
-#  0  | "1" | "F" | "F" | "F" | "F" |
-#  1  | "1" | "F" | "F" | "F" | "F" |
-#  2  | "1" | "F" | "F" | "F" | "F" |
-#  3  | "1" | "F" | "F" | "F" | "F" |
-
-#slowspeed setting for all digits
-#digit | command | 0 | 1 | 2 | 3 |
-#---------------------------------
-#  0  | "2" | "F" | "F" | "F" | "F" |
-#  1  | "2" | "F" | "F" | "F" | "F" |
-#  2  | "2" | "F" | "F" | "F" | "F" |
-#  3  | "2" | "F" | "F" | "F" | "F" |
+#  4  | "1" | "F" | "F" | "F" | 1 |
+#  4  | "1" | "F" | "F" | "F" | 0 |
 
 #digit 1 retract angle setting, e.g. [105, 100, 95, 110, 100, 100, 110]
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
-#  1  | "3" | "0" | "1" | "0" | "5" |
-#  1  | "3" | "1" | "1" | "0" | "0" |
-#  1  | "3" | "2" | "0" | "9" | "5" |
-#  1  | "3" | "3" | "1" | "1" | "0" |
-#  1  | "3" | "4" | "1" | "0" | "0" |
-#  1  | "3" | "5" | "1" | "0" | "5" |
-#  1  | "3" | "6" | "1" | "1" | "0" |
-
-#digit 1 retract angle setting, e.g. [105, 100, 95, 110, 100, 100, 110]
-#digit | command | segment | angle hundreds | angle tens | angle ones |
-#---------------------------------
-#  1  | "3" | "0" | "1" | "0" | "5" |
-#  1  | "3" | "1" | "1" | "0" | "0" |
-#  1  | "3" | "2" | "0" | "9" | "5" |
-#  1  | "3" | "3" | "1" | "1" | "0" |
-#  1  | "3" | "4" | "1" | "0" | "0" |
-#  1  | "3" | "5" | "1" | "0" | "5" |
-#  1  | "3" | "6" | "1" | "1" | "0" |
+#  1  | "2" | "0" | "1" | "0" | "5" |
+#  1  | "2" | "1" | "1" | "0" | "0" |
+#  1  | "2" | "2" | "0" | "9" | "5" |
+#  1  | "2" | "3" | "1" | "1" | "0" |
+#  1  | "2" | "4" | "1" | "0" | "0" |
+#  1  | "2" | "5" | "1" | "0" | "5" |
+#  1  | "2" | "6" | "1" | "1" | "0" |
 
 #digit 1 extend angle setting, e.g. [20, 10, 10, 10, 10, 15, 20]
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
-#  1  |  "4" | "0" | "0" | "2" | "0" |
-#  1  |  "4" | "1" | "0" | "1" | "0" |
-#  1  |  "4" | "2" | "0" | "1" | "0" |
-#  1  |  "4" | "3" | "0" | "1" | "0" |
-#  1  |  "4" | "4" | "0" | "1" | "0" |
-#  1  |  "4" | "5" | "0" | "1" | "5" |
-#  1  |  "4" | "6" | "0" | "2" | "0" |
+#  1  |  "3" | "0" | "0" | "2" | "0" |
+#  1  |  "3" | "1" | "0" | "1" | "0" |
+#  1  |  "3" | "2" | "0" | "1" | "0" |
+#  1  |  "3" | "3" | "0" | "1" | "0" |
+#  1  |  "3" | "4" | "0" | "1" | "0" |
+#  1  |  "3" | "5" | "0" | "1" | "5" |
+#  1  |  "3" | "6" | "0" | "2" | "0" |
 
 #digit 1 current value, e.g. 0
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
-#  1  |  "5" | "F" | "F" | "F" | "0" |
+#  1  |  "4" | "F" | "F" | "F" | "0" |
 
-#digit 1 previous value, e.g. 14
+#digit 1 previous value, e.g. 3
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
-#  1  |  "6" | "F" | "F" | "F" | "14" |
+#  1  |  "5" | "F" | "F" | "F" | "3" |
 
 #digit 1 reset config file to factory defaults
 #digit configuration values are not reset
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
-#  1  |  "7" | "F" | "F" | "F" | "F" |
+#  1  |  "F" | "F" | "F" | "F" | "F" |
