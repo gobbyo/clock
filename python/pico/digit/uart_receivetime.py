@@ -29,7 +29,7 @@ def validUART(value):
     if len(value) != 6:
         return False
     for d in value:
-        print("validUART({0})".format(decodeHex(d)))
+        #print("validUART({0})".format(decodeHex(d)))
         try:
             i = int(decodeHex(d))
             if (i < 0) or (i > 15):
@@ -139,6 +139,8 @@ def main():
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:
+        conf.write("current",0)
+        conf.write("previous",14)
         digit.__del__()
         print('Done')
 if __name__ == "__main__":

@@ -114,11 +114,11 @@ class servoDigitDisplay:
         #Start change of digit, turn on power for servos, turn off LEDs
         for i in range(0,len(result)):
             if result[i] == 1:
-                print("extend start {0}".format(i))
+                #print("extend start {0}".format(i))
                 self._switches[i].on()
                 self._leds[i].off()
             if result[i] == 0:
-                print("retract start {0}".format(i))
+                #print("retract start {0}".format(i))
                 self._switches[i].on()
                 self._leds[i].off()
 
@@ -131,25 +131,25 @@ class servoDigitDisplay:
                 if result[i] == 1:
                     retractAngles[i] -= self._rateofmovement
                     if retractAngles[i] >= self._extendAngles[i]:
-                        print("{0} extend angle = {1}".format(i, retractAngles[i]))
+                        #print("{0} extend angle = {1}".format(i, retractAngles[i]))
                         self._servos[i].move(retractAngles[i])
                 if result[i] == 0:
                     extendAngles[i] += self._rateofmovement
                     if extendAngles[i] <= self._retractAngles[i]:
-                        print("{0} retract angle = {1}".format(i, extendAngles[i]))
+                        #print("{0} retract angle = {1}".format(i, extendAngles[i]))
                         self._servos[i].move(extendAngles[i])
             time.sleep(self._servospeed)
 
         #Finish moving segments, turn off power to servos, turn on LEDs
         for i in range(len(result)):
             if result[i] == 1:
-                print("extend complete {0}".format(i))
+                #print("extend complete {0}".format(i))
                 self._servos[i].move(extendAngles[i]) #finish any leftover
                 time.sleep(.3)
                 self._switches[i].off()
 
             if result[i] == 0:
-                print("retract complete {0}".format(i))
+                #print("retract complete {0}".format(i))
                 self._servos[i].move(retractAngles[i]) #finish any leftover
                 time.sleep(.3)
                 self._switches[i].off()
