@@ -36,7 +36,7 @@ class uartCommandEnum():
     extend = 3
     current = 4
     previous = 5
-    reset = 0x0F
+    hybernate = 0x0F
 
 #time setting for all digits
 #digit | command | 0 | 1 | 2 | 3 |
@@ -81,8 +81,7 @@ class uartCommandEnum():
 #---------------------------------
 #  1  |  "5" | "F" | "F" | "F" | "3" |
 
-#digit 1 reset config file to factory defaults
-#digit configuration values are not reset
-#digit | command | segment | angle hundreds | angle tens | angle ones |
+#digit 1 reset to default values
+#digit | command | thousands | hundreds | tens | ones |
 #---------------------------------
 #  1  |  "F" | "F" | "F" | "F" | "F" |

@@ -36,7 +36,7 @@ def validUART(value):
                 print("validUART: invalid value {0}".format(i))
                 return False
         except:
-            print("validUART: invalid value {0}".format(i))
+            print("validUART: invalid value {0}".format(value))
             return False
         finally:
             pass
@@ -126,7 +126,8 @@ def main():
                             conf.write("retract",retract)
                         if (command == uartCommandEnum.motion):
                             print("writing to config, 'motion' = {0}".format(decodeHex(d[5])))
-                            conf.write("motion",int(decodeHex(d[5])))
+                            displaymotion = int(decodeHex(d[5]))
+                            conf.write("motion",displaymotion)
                         if (command == uartCommandEnum.current):
                             print("writing to config, 'current' = {0}".format(decodeHex(d[5])))
                             conf.write("current",int(decodeHex(d[5])))

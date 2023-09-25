@@ -8,6 +8,8 @@ import urequests
 import secrets
 from servocolons import servoColonsDisplay
 
+motionpin = const(6)
+militarytimepin = const(7)
 tempsensorpin = const(20)
 tempswitchpin = const(0)
 uartTxPin = const(12)
@@ -22,11 +24,14 @@ class kineticClock():
         self._uarttime = machine.UART(0, baudrate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
         self._uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
         self._sensor = DHT11(machine.Pin(tempsensorpin, machine.Pin.OUT, pull=machine.Pin.PULL_DOWN))
+        self._motion = machine.Pin(motionpin, machine.Pin.IN, machine.Pin.PULL_UP)
+        self._militaryTime = machine.Pin(militarytimepin, machine.Pin.IN, machine.Pin.PULL_UP)
         self._switch = machine.Pin(tempswitchpin, machine.Pin.OUT,value=0)
         self._colons = servoColonsDisplay(conf)
         self._currentTime = "{0}{1:02}".format(0, 0)
         self._wifi = picowifi.hotspot(secrets.usr, secrets.pwd)
         self._sync = syncRTC.syncRTC()
+        self._lastmotion = 0
     
     def __del__(self):
         print("kineticClock.__del__()")
@@ -38,6 +43,23 @@ class kineticClock():
         self._uarttime.write(b)
         time.sleep(2)
 
+    def motion(self):
+        print("kinetecClock.motion()")
+        curmotion = self._motion.value()
+        print("curmotion = {0}".format(curmotion))
+        if self._lastmotion != curmotion:
+            if curmotion == 0:
+                print("motion off")
+                self._uarttime.write(bytearray('41FFF0', 'utf-8'))
+                print("curmotion = {0}".format(curmotion))
+            else:
+                print("motion on")
+                self._uarttime.write(bytearray('41FFF1', 'utf-8'))
+                print("curmotion = {0}".format(curmotion))
+
+            self._lastmotion = curmotion
+        return curmotion
+    
     def connectWifi(self, conf):
         connected = False
         while not connected:
@@ -61,10 +83,12 @@ class kineticClock():
         print("lon = {0}".format(geo['lon']))
         
     def formathour(self, hour):
-        if hour > 12:
-            hour -= 12
-        if hour == 0:
-            hour = 12
+        military = self._militaryTime.value()
+        if military == 1:
+            if hour > 12:
+                hour -= 12
+            if hour == 0:
+                hour = 12
         h = strhour = "{0:02}".format(hour)
         if strhour[0] == "0":
             strhour = "E" + h[1]

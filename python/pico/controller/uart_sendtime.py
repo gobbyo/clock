@@ -49,6 +49,8 @@ def main():
         nextwifischedule = (round((clock._sync.rtc.datetime()[timeEnum.hours]/12)) + wifiHourlySchedule)%24 #hours
 
         while True:
+            if clock.motion():
+                print("motion on")
             #display time
             if (elapsedseconds > elapsedwaitTime) or (elapsedseconds < elapsedwaitDate):
                 clock.displayTime(clock._sync, displayMilitaryTime)
