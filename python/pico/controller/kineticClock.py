@@ -8,10 +8,10 @@ import urequests
 import secrets
 from servocolons import servoColonsDisplay
 
-motionpin = const(6)
-hour24timepin = const(7)
-tempsensorpin = const(20)
-tempswitchpin = const(0)
+motionPin = const(6)
+hour24TimePin = const(7)
+tempSensorPin = const(20)
+tempSwitchPin = const(0)
 disconnectedLEDpin = const(18)
 connectedLEDpin = const(19)
 uartTxPin = const(12)
@@ -21,48 +21,48 @@ class kineticClock():
     def __init__(self, conf) -> None:
         print("kineticClock.__init__()")
 
-        baudrate = [9600, 19200, 38400, 57600, 115200]
+        baudRate = [9600, 19200, 38400, 57600, 115200]
 
         self._connectedLED = machine.Pin(connectedLEDpin, machine.Pin.OUT)
         self._disconnectedLED = machine.Pin(disconnectedLEDpin, machine.Pin.OUT)
-        self._uarttime = machine.UART(0, baudrate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
-        self._uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
-        self._sensor = DHT11(machine.Pin(tempsensorpin, machine.Pin.OUT, pull=machine.Pin.PULL_DOWN))
-        self._motion = machine.Pin(motionpin, machine.Pin.IN, machine.Pin.PULL_UP)
-        self._display24Hour = machine.Pin(hour24timepin, machine.Pin.IN, machine.Pin.PULL_UP)
-        self._switch = machine.Pin(tempswitchpin, machine.Pin.OUT,value=0)
+        self._uartTime = machine.UART(0, baudRate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
+        self._uartTime.init(baudRate[0], bits=8, parity=None, stop=1)
+        self._sensor = DHT11(machine.Pin(tempSensorPin, machine.Pin.OUT, pull=machine.Pin.PULL_DOWN))
+        self._motion = machine.Pin(motionPin, machine.Pin.IN, machine.Pin.PULL_UP)
+        self._display24Hour = machine.Pin(hour24TimePin, machine.Pin.IN, machine.Pin.PULL_UP)
+        self._switch = machine.Pin(tempSwitchPin, machine.Pin.OUT,value=0)
         self._colons = servoColonsDisplay(conf)
         self._currentTime = "{0}{1:02}".format(0, 0)
         self._wifi = picowifi.hotspot(secrets.usr, secrets.pwd)
         self._sync = syncRTC.syncRTC()
-        self._lastmotion = 0
+        self._lastMotion = 0
     
     def __del__(self):
         print("kineticClock.__del__()")
         b = bytearray('40EEEE', 'utf-8')
-        self._uarttime.write(b)
+        self._uartTime.write(b)
         time.sleep(1)
         self._colons.retract(True, True)
         b = bytearray('1FFFFF', 'utf-8')
-        self._uarttime.write(b)
+        self._uartTime.write(b)
         time.sleep(2)
 
     def motion(self):
         #print("kineticClock.motion()")
-        curmotion = self._motion.value()
-        #print("curmotion = {0}".format(curmotion))
-        if self._lastmotion != curmotion:
-            if curmotion == 0:
+        curMotion = self._motion.value()
+        #print("curMotion = {0}".format(curMotion))
+        if self._lastMotion != curMotion:
+            if curMotion == 0:
                 print("motion off")
-                self._uarttime.write(bytearray('41FFF0', 'utf-8'))
-                print("curmotion = {0}".format(curmotion))
+                self._uartTime.write(bytearray('41FFF0', 'utf-8'))
+                print("curMotion = {0}".format(curMotion))
             else:
                 print("motion on")
-                self._uarttime.write(bytearray('41FFF1', 'utf-8'))
-                print("curmotion = {0}".format(curmotion))
+                self._uartTime.write(bytearray('41FFF1', 'utf-8'))
+                print("curMotion = {0}".format(curMotion))
 
-            self._lastmotion = curmotion
-        return curmotion
+            self._lastMotion = curMotion
+        return curMotion
     
     def connectWifi(self):
         connected = False
@@ -108,7 +108,7 @@ class kineticClock():
         finally:
             self._connectedLED.off()
             
-    def formathour(self, hour):
+    def formatHour(self, hour):
         display24Hour = self._display24Hour.value()
         if display24Hour == 0:
             if hour > 12:
@@ -144,8 +144,8 @@ class kineticClock():
         print("kineticClock.setIndoorTemp()")
         temp = 0
         humid = 0
-        readtempattempts = 5
-        while readtempattempts > 0:
+        readTempAttempts = 5
+        while readTempAttempts > 0:
             try:
                 self._switch.on()
                 time.sleep(1)
@@ -158,22 +158,22 @@ class kineticClock():
                     conf.write("humidreading",humid)
                     print("humidreading = {0}".format(humid))
                     self._switch.off()
-                    readtempattempts = 1
+                    readTempAttempts = 1
                     print("Finished recording temp/humid sensor")
             except Exception as e:
                 print("Exception: {}".format(e))
             finally:
                 self._switch.off()
-                readtempattempts -=1
+                readTempAttempts -=1
                 time.sleep(1)
 
     def displayTime(self, sync):
         print("kineticClock.displayTime()")
         self._colons.extend(True, True)
-        currentTime = "40{0}{1:02}".format(self.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
+        currentTime = "40{0}{1:02}".format(self.formatHour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
         print("currentTime = {0}".format(currentTime))
         b = bytearray(currentTime, 'utf-8')
-        self._uarttime.write(b)
+        self._uartTime.write(b)
         time.sleep(1)
     
     def displayDate(self):
@@ -182,7 +182,7 @@ class kineticClock():
         currentDate = "40{0:02}{1:02}".format(self._sync.rtc.datetime()[1], self._sync.rtc.datetime()[2])
         print("currentDate = {0}".format(currentDate))
         b = bytearray(currentDate, 'utf-8')
-        self._uarttime.write(b)
+        self._uartTime.write(b)
         time.sleep(1)
     
     def displayTemp(self,conf):
@@ -190,21 +190,24 @@ class kineticClock():
         displayIndoorTemp = conf.read("displayIndoorTemp")
         if displayIndoorTemp == 1:
             self._colons.extend(True, False)
+            print("display indoor temp")
             temp = conf.read("tempreading")
-            curtemp = "40{0:02}AD".format(round((temp*1.8)+32))
-            print("indoor temp = {0}".format(curtemp))
-            b = bytearray(curtemp, 'utf-8')                    
-            self._uarttime.write(b)
-            time.sleep(1)
         else:
             self._colons.extend(False, True)
+            print("display outdoor temp")
             temp = conf.read("tempoutdoor")
-            curtemp = "40{0:02}AD".format(temp)
-            print("outdoor temp = {0}".format(curtemp))
-            b = bytearray(curtemp, 'utf-8')                    
-            self._uarttime.write(b)
-            time.sleep(1)
-
+        
+        p = round((temp*1.8)+32)
+        if p < 0:
+            p *= -1
+        t = "{0}".format(p)
+        if len(t) > 2:
+            t = t[1:]
+        curTemp = "40{0:02}AD".format(int(t))
+        b = bytearray(curTemp, 'utf-8')                    
+        self._uartTime.write(b)
+        print("temp = {0}".format(curTemp))
+        time.sleep(1)
 
     def displayHumidity(self, conf):
         print("kineticClock.displayHumidity()")
@@ -212,19 +215,19 @@ class kineticClock():
         if displayIndoorTemp == 1:
             h = conf.read("humidreading")
             self._colons.extend(True, False)
-            curhumid = "40{0}AB".format(h)
-            print("indoor humidity = {0}".format(curhumid))
-            b = bytearray(curhumid, 'utf-8')                    
-            self._uarttime.write(b)
+            curHumid = "40{0}AB".format(h)
+            print("indoor humidity = {0}".format(curHumid))
+            b = bytearray(curHumid, 'utf-8')                    
+            self._uartTime.write(b)
             time.sleep(1)
             conf.write("displayIndoorTemp",0)
         else:
             h = conf.read("humidoutdoor")
             self._colons.extend(False, True)
-            curhumid = "40{0:02}AB".format(h)
-            print("outdoor humidity = {0}".format(curhumid))
-            b = bytearray(curhumid, 'utf-8')                    
-            self._uarttime.write(b)
+            curHumid = "40{0:02}AB".format(h)
+            print("outdoor humidity = {0}".format(curHumid))
+            b = bytearray(curHumid, 'utf-8')                    
+            self._uartTime.write(b)
             #log.write("sent UART = {0}".format(b))
             time.sleep(1)
             conf.write("displayIndoorTemp",1)

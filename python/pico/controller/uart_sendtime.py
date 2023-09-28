@@ -13,7 +13,7 @@ def main():
         display24Hour = conf.read("display24Hour")
 
         if clock.connectWifi():
-            clock.syncClock(conf)
+            clock.syncClock()
         
         clock.setIndoorTemp(conf)
         clock.setOutdoorTemp(conf)
@@ -63,7 +63,7 @@ def main():
                 print("--updating clock--")
                 print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
                 if clock.connectWifi():
-                    clock.syncClock(conf)
+                    clock.syncClock()
                 itinerary.minutesSchedule[elapsedMinutes] = -1
 
             if itinerary.minutesSchedule[elapsedMinutes] == scheduleEnum.updateIndoor:
