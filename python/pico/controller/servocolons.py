@@ -32,6 +32,9 @@ class servoColonsDisplay:
         self.paintNumber(0x0E)
         for led in self._leds:
             led.off()
+        while i < len(self._servos):
+            self._servos[i].move(self._retractAngles[i])
+            i += 1
         #print("servoColonsDisplay destructor")
 
     def extend(self, upper, lower):

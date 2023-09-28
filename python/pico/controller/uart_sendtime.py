@@ -1,8 +1,6 @@
 import kineticClock
 import time
 import config
-import json
-import urequests
 
 class timeEnum():
     year = 0
@@ -12,98 +10,160 @@ class timeEnum():
     hours = 4
     minutes = 5
     seconds = 6
-    subseconds = 7
+    subSeconds = 7
 
+class scheduleEnum():
+    time = 0
+    date = 1
+    temp = 2
+    humid = 3
+    updateClock = 4
+    updateIndoor = 5
+    updateOutdoor = 6
 
-    
+class schedule():
+    secondsSchedule = []
+    displayTime = [scheduleEnum.time,0,14]
+    displayDate = [scheduleEnum.date,15,24]
+    displayTemp = [scheduleEnum.temp,25,34]
+    displayHumidity = [scheduleEnum.humid,35,44]
+    displayLastTime = [scheduleEnum.time,45,59]
+
+    minutesSchedule = []
+    updateClock = [scheduleEnum.updateClock,59,1]
+    updateIndoorTempHumidity = [scheduleEnum.updateIndoor,4,15]
+    updateOutdoorTempHumidity = [scheduleEnum.updateOutdoor,10,6]
+
+    def __init__(self) -> None:
+        self.initSecondSchedule()
+        self.initMinuteSchedule()
+        
+    def __del__(self):
+        pass
+
+    def initSecondSchedule(self):
+        self.secondsSchedule.clear()
+        for s in range(60):
+            if s >= self.displayTime[1] and s <= self.displayTime[2]:
+                self.secondsSchedule.append(self.displayTime[0])
+            if s >= self.displayDate[1] and s <= self.displayDate[2]:
+                self.secondsSchedule.append(self.displayDate[0])
+            if s >= self.displayTemp[1] and s <= self.displayTemp[2]:
+                self.secondsSchedule.append(self.displayTemp[0])
+            if s >= self.displayHumidity[1] and s <= self.displayHumidity[2]:
+                self.secondsSchedule.append(self.displayHumidity[0])
+            if s >= self.displayLastTime[1] and s <= self.displayLastTime[2]:
+                self.secondsSchedule.append(self.displayTime[0])
+
+    def initMinuteSchedule(self):
+        for i in range(60):
+            self.minutesSchedule.append(-1)
+        
+        m = self.updateClock[1]
+        while m < 60:
+            self.minutesSchedule.pop(m)
+            self.minutesSchedule.insert(m,self.updateClock[0])
+            m += self.updateClock[2]
+
+        m = self.updateIndoorTempHumidity[1]
+        while m < 60:
+            self.minutesSchedule.pop(m)
+            self.minutesSchedule.insert(m,self.updateIndoorTempHumidity[0])
+            m += self.updateIndoorTempHumidity[2]
+
+        m = self.updateOutdoorTempHumidity[1]
+        while m < 60:
+            self.minutesSchedule.pop(m)
+            self.minutesSchedule.insert(m,self.updateOutdoorTempHumidity[0])
+            m += self.updateOutdoorTempHumidity[2]
+
+    def clearNearFutureDuplicates(self, schedule, elapsedSeconds, scheduleEnumType):
+        i = elapsedSeconds
+        while schedule[i] == scheduleEnumType:
+            schedule[i] = -1
+            i += 1
+            if i >= 60:
+                break
+
 def main():
     conf = config.Config("config.json")
     clock = kineticClock.kineticClock(conf)
 
     try:
-        elapsedwaitDate = 10 #seconds
-        elapsedwaitTemp = 25 #seconds
-        elapsedwaitHumid = 35 #seconds
-        elapsedwaitTime = 45 #seconds
+        display24Hour = conf.read("display24Hour")
 
-        displayMilitaryTime = conf.read("displayMilitaryTime")
-        wifiHourlySchedule = conf.read("wifiHourlySchedule")
-        tempHumidMinuteSchedule = conf.read("tempHumidMinuteSchedule")
-        print("wifiHourlySchedule = {0} hours".format(wifiHourlySchedule))
-        print("tempHumidMinuteSchedule = {0} minutes".format(tempHumidMinuteSchedule))
-        elapsedseconds = 0
-        nextwifischedule = 0
-        nexttemphumidschedule = 0
-
-        if clock.connectWifi(conf):
+        if clock.connectWifi():
             clock.syncClock(conf)
-            print("external ip address = {0}".format(clock._sync.externalIPaddress))
-            g = urequests.get("http://ip-api.com/json/{0}".format(clock._sync.externalIPaddress))
-            geo = json.loads(g.content)
-            conf.write("lat",geo['lat'])
-            conf.write("lon",geo['lon'])
-            print("lat = {0}".format(geo['lat']))
-            print("lon = {0}".format(geo['lon']))
         
-        nexttemphumidschedule = 0
-        nextwifischedule = (round((clock._sync.rtc.datetime()[timeEnum.hours]/12)) + wifiHourlySchedule)%24 #hours
+        clock.setIndoorTemp(conf)
+        clock.setOutdoorTemp(conf)
+        clock.motion()
+
+        itinerary = schedule()
+        lastMinute = 0
+        lastHour = 0
 
         while True:
-            if clock.motion():
-                print("motion on")
-            #display time
-            if (elapsedseconds > elapsedwaitTime) or (elapsedseconds < elapsedwaitDate):
-                clock.displayTime(clock._sync, displayMilitaryTime)
-                print("elapsedmins = {0}, elapsedseconds = {1}".format(clock._sync.rtc.datetime()[timeEnum.minutes], elapsedseconds))
-                
-                #sensor measurement
-                print("nexttemphumidschedule = {0}".format(nexttemphumidschedule))
-                if nexttemphumidschedule <= clock._sync.rtc.datetime()[timeEnum.minutes]:
-                    nexttemphumidschedule = (clock._sync.rtc.datetime()[timeEnum.minutes] + tempHumidMinuteSchedule)%60 #minutes
-                    print("--reading temp sensor--")
-                    clock.setIndoorTemp(conf)
-                    time.sleep(1)
-                    clock.setOutdoorTemp(conf)
-                    time.sleep(2)
-                while elapsedseconds < elapsedwaitDate:
-                    elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
-                    time.sleep(1)
-                
-                #wifi and time sync
-                if nextwifischedule == clock._sync.rtc.datetime()[timeEnum.hours]:
-                    print("wifischedule = {0}".format(nextwifischedule))
-                    nextwifischedule = (round((clock._sync.rtc.datetime()[timeEnum.hours]/12)) + wifiHourlySchedule)%24 #hours
-                    print("nextwifischedule = {0}".format(nextwifischedule))
-                    print("--wifi and time sync--")
-                    if clock.connectWifi(conf):
-                        clock.syncClock(conf)
+            elapsedSeconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
+            elapsedMinutes = round(clock._sync.rtc.datetime()[timeEnum.minutes])
+            elapsedHours = round(clock._sync.rtc.datetime()[timeEnum.hours])
+            #print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+
+            if elapsedMinutes != lastMinute:
+                itinerary.initSecondSchedule()
+                print("initSecondSchedule()")
+                lastMinute = elapsedMinutes
+
+            if elapsedHours != lastHour:
+                itinerary.initMinuteSchedule()
+                print("initMinuteSchedule()")
+                lastHour = elapsedHours
             
-            #display date
-            if (elapsedseconds >= elapsedwaitDate) and (elapsedseconds < elapsedwaitTemp):
+            if itinerary.secondsSchedule[elapsedSeconds] == scheduleEnum.time:
+                clock.displayTime(clock._sync)
+                print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+                itinerary.clearNearFutureDuplicates(itinerary.secondsSchedule, elapsedSeconds, scheduleEnum.time)
+
+            if itinerary.secondsSchedule[elapsedSeconds] == scheduleEnum.date:
                 clock.displayDate()
-                print("elapsedseconds = {0}".format(elapsedseconds))                
-                while (elapsedseconds < elapsedwaitTemp):
-                    time.sleep(1)
-                    elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
+                print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+                itinerary.clearNearFutureDuplicates(itinerary.secondsSchedule, elapsedSeconds, scheduleEnum.date)
 
-            #display temp
-            if (elapsedseconds >= elapsedwaitTemp) and (elapsedseconds < elapsedwaitHumid):
+            if itinerary.secondsSchedule[elapsedSeconds] == scheduleEnum.temp:
                 clock.displayTemp(conf)
-                print("elapsedseconds = {0}".format(elapsedseconds))                
-                while (elapsedseconds < elapsedwaitHumid):
-                    time.sleep(1)
-                    elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
+                print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+                itinerary.clearNearFutureDuplicates(itinerary.secondsSchedule, elapsedSeconds, scheduleEnum.temp)
 
-            #display humidity
-            if (elapsedseconds >= elapsedwaitHumid) and (elapsedseconds < elapsedwaitTime):
+            if itinerary.secondsSchedule[elapsedSeconds] == scheduleEnum.humid:
                 clock.displayHumidity(conf)
-                print("elapsedseconds = {0}".format(elapsedseconds))
-                while (elapsedseconds < elapsedwaitTime):
-                    time.sleep(1)
-                    elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
+                print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+                itinerary.clearNearFutureDuplicates(itinerary.secondsSchedule, elapsedSeconds, scheduleEnum.humid)
+            
+            if itinerary.minutesSchedule[elapsedMinutes] == scheduleEnum.updateClock:
+                print("--updating clock--")
+                print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+                if clock.connectWifi():
+                    clock.syncClock(conf)
+                itinerary.minutesSchedule[elapsedMinutes] = -1
 
-            elapsedseconds = round(clock._sync.rtc.datetime()[timeEnum.seconds])
-            print("elapsedseconds = {0}".format(elapsedseconds))
+            if itinerary.minutesSchedule[elapsedMinutes] == scheduleEnum.updateIndoor:
+                print("--reading indoor temp sensor--")
+                print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+                clock.setIndoorTemp(conf)
+                itinerary.minutesSchedule[elapsedMinutes] = -1
+
+            if itinerary.minutesSchedule[elapsedMinutes] == scheduleEnum.updateOutdoor:
+                print("--reading outdoor temp sensor--")
+                print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+                clock.setOutdoorTemp(conf)
+                itinerary.minutesSchedule[elapsedMinutes] = -1
+            
+            #check switch to see if state has changed
+            clock.motion()
+            
+            #check switch to see if state has changed
+            display24Hour = conf.read("display24Hour")
+            
             time.sleep(1)
 
     except KeyboardInterrupt:

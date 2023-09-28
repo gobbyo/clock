@@ -1,5 +1,5 @@
 from machine import RTC
-import network, rp2
+import network
 import urequests
 import json
 import time
@@ -10,17 +10,13 @@ class syncRTC:
     def __init__(self):
         self.rtc = RTC()
         self.externalIPaddress = "00.000.000.000"
-        rp2.country('US') # ISO 3166-1 Alpha-2 code, eg US, GB, DE, AU
 
     def syncclock(self):
         print("Sync clock")
         returnval = True
 
         try:
-            print("Obtaining external IP Address")
-            ipaddress = urequests.get(externalIPAddressAPI)
-            self.externalIPaddress = ipaddress.content.decode("utf-8")
-            print("Obtained external IP Address: {0}".format(self.externalIPaddress))
+            self.setExternalIPAddress()
             timeAPI = "https://www.timeapi.io/api/Time/current/ip?ipAddress={0}".format(self.externalIPaddress)
             r = urequests.get(timeAPI)
             z = json.loads(r.content)
@@ -41,6 +37,17 @@ class syncRTC:
     def __del__(self):
         urequests.Response.close()
         #machine.reset()
+
+    def setExternalIPAddress(self):
+        try:
+            print("Obtaining external IP Address")
+            ipaddress = urequests.get(externalIPAddressAPI)
+            self.externalIPaddress = ipaddress.content.decode("utf-8")
+            print("Obtained external IP Address: {0}".format(self.externalIPaddress))
+        except Exception as e:
+            print("Exception: {}".format(e))
+        finally:
+            pass
 
     def connectWiFi(self, ssid, pwd):
         try:

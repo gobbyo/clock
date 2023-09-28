@@ -7,6 +7,14 @@ def main():
         servo.move(0)
         time.sleep(1)
         servo.move(90)
+        time.sleep(1)
+        servo.move(0)
+        for i in range(0, 180, 3):
+            servo.move(i)
+            time.sleep(0.1)
+        servo.move(0)
+        time.sleep(1)
+        servo.move(90)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:

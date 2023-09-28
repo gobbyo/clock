@@ -140,20 +140,23 @@ class servoDigitDisplay:
                         self._servos[i].move(extendAngles[i])
             time.sleep(self._servospeed)
 
+        for i in range(len(result)):
+            self._switches[i].off()
+
         #Finish moving segments, turn off power to servos, turn on LEDs
         for i in range(len(result)):
             if result[i] == 1:
-                #print("extend complete {0}".format(i))
+                self._switches[i].on()
                 self._servos[i].move(extendAngles[i]) #finish any leftover
                 time.sleep(.3)
                 self._switches[i].off()
 
             if result[i] == 0:
-                #print("retract complete {0}".format(i))
+                self._switches[i].on()
                 self._servos[i].move(retractAngles[i]) #finish any leftover
                 time.sleep(.3)
                 self._switches[i].off()
-        
+            
         for i in range(len(result)):
             if result[i] == 1:
                 self._leds[i].on()

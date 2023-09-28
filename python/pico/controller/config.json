@@ -3,7 +3,7 @@
     "displayIndoorTemp": 1, 
     "tempHumidMinuteSchedule": 5, 
     "wifiHourlySchedule": 4, 
-    "displayMilitaryTime": false, 
+    "display24Hour": false, 
     "tunit": "f",
     "lat": 47.626,
     "lon": -122.0404, 

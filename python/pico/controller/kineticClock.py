@@ -9,9 +9,11 @@ import secrets
 from servocolons import servoColonsDisplay
 
 motionpin = const(6)
-militarytimepin = const(7)
+hour24timepin = const(7)
 tempsensorpin = const(20)
 tempswitchpin = const(0)
+disconnectedLEDpin = const(18)
+connectedLEDpin = const(19)
 uartTxPin = const(12)
 uartRxPin = const(13)
 
@@ -21,11 +23,13 @@ class kineticClock():
 
         baudrate = [9600, 19200, 38400, 57600, 115200]
 
+        self._connectedLED = machine.Pin(connectedLEDpin, machine.Pin.OUT)
+        self._disconnectedLED = machine.Pin(disconnectedLEDpin, machine.Pin.OUT)
         self._uarttime = machine.UART(0, baudrate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
         self._uarttime.init(baudrate[0], bits=8, parity=None, stop=1)
         self._sensor = DHT11(machine.Pin(tempsensorpin, machine.Pin.OUT, pull=machine.Pin.PULL_DOWN))
         self._motion = machine.Pin(motionpin, machine.Pin.IN, machine.Pin.PULL_UP)
-        self._militaryTime = machine.Pin(militarytimepin, machine.Pin.IN, machine.Pin.PULL_UP)
+        self._display24Hour = machine.Pin(hour24timepin, machine.Pin.IN, machine.Pin.PULL_UP)
         self._switch = machine.Pin(tempswitchpin, machine.Pin.OUT,value=0)
         self._colons = servoColonsDisplay(conf)
         self._currentTime = "{0}{1:02}".format(0, 0)
@@ -44,9 +48,9 @@ class kineticClock():
         time.sleep(2)
 
     def motion(self):
-        print("kinetecClock.motion()")
+        #print("kineticClock.motion()")
         curmotion = self._motion.value()
-        print("curmotion = {0}".format(curmotion))
+        #print("curmotion = {0}".format(curmotion))
         if self._lastmotion != curmotion:
             if curmotion == 0:
                 print("motion off")
@@ -60,31 +64,53 @@ class kineticClock():
             self._lastmotion = curmotion
         return curmotion
     
-    def connectWifi(self, conf):
+    def connectWifi(self):
         connected = False
+        self._disconnectedLED.on()
         while not connected:
             connected = self._wifi.connectWifi()
-            time.sleep(5)  
+            time.sleep(1)
+            self._disconnectedLED.off()
+            time.sleep(1)
+            self._disconnectedLED.on()
         if connected:
             print("Connected to WiFi")
+            self._disconnectedLED.off()
+            self._connectedLED.on()
+            time.sleep(1)
+            self._connectedLED.off()
         else:
             print("NOT Connected to WiFi")
         return connected
 
-    def syncClock(self, conf):
-        self._sync.syncclock()
+    def setLatLon(self, conf):
+        try:
+            print("external ip address = {0}".format(self._sync.externalIPaddress))
+            g = urequests.get("http://ip-api.com/json/{0}".format(self._sync.externalIPaddress))
+            geo = json.loads(g.content)
+            conf.write("lat",geo['lat'])
+            conf.write("lon",geo['lon'])
+            print("lat = {0}".format(geo['lat']))
+            print("lon = {0}".format(geo['lon']))
+        except Exception as e:
+            print("Exception: {}".format(e))
+        finally:
+            time.sleep(1)
+            self._connectedLED.off()
+            
+    def syncClock(self):
         print("kineticClock.syncClock()")
-        print("external ip address = {0}".format(self._sync.externalIPaddress))
-        g = urequests.get("http://ip-api.com/json/{0}".format(self._sync.externalIPaddress))
-        geo = json.loads(g.content)
-        conf.write("lat",geo['lat'])
-        conf.write("lon",geo['lon'])
-        print("lat = {0}".format(geo['lat']))
-        print("lon = {0}".format(geo['lon']))
-        
+        self._connectedLED.on()
+        try:
+            self._sync.syncclock()
+        except Exception as e:
+            print("Exception: {}".format(e))
+        finally:
+            self._connectedLED.off()
+            
     def formathour(self, hour):
-        military = self._militaryTime.value()
-        if military == 1:
+        display24Hour = self._display24Hour.value()
+        if display24Hour == 0:
             if hour > 12:
                 hour -= 12
             if hour == 0:
@@ -97,6 +123,7 @@ class kineticClock():
     def setOutdoorTemp(self, conf):
         print("kineticClock.setOutdoorTemp()")
         try:
+            self._connectedLED.on()
             lat = conf.read("lat")
             lon = conf.read("lon")
             r = urequests.get("https://api.open-meteo.com/v1/forecast?latitude={0}&longitude={1}&current_weather=true&hourly=relativehumidity_2m".format(lat,lon))
@@ -111,6 +138,7 @@ class kineticClock():
             print("Exception: {}".format(e))
         finally:
             time.sleep(1)
+            self._connectedLED.off()
 
     def setIndoorTemp(self,conf):
         print("kineticClock.setIndoorTemp()")
@@ -139,7 +167,7 @@ class kineticClock():
                 readtempattempts -=1
                 time.sleep(1)
 
-    def displayTime(self, sync, militaryTime):
+    def displayTime(self, sync):
         print("kineticClock.displayTime()")
         self._colons.extend(True, True)
         currentTime = "40{0}{1:02}".format(self.formathour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
@@ -168,7 +196,6 @@ class kineticClock():
             b = bytearray(curtemp, 'utf-8')                    
             self._uarttime.write(b)
             time.sleep(1)
-
         else:
             self._colons.extend(False, True)
             temp = conf.read("tempoutdoor")
