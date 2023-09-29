@@ -6,48 +6,48 @@ import config
 from digitconfigenum import uartCommandEnum
 #import logs
 
-uartsignalpausetime = 1 #second
+waitTime = .25 #second
 
 def decodeHex(value):
-    returnval = value
+    returnVal = value
     if value == "A":
-        returnval = 10
+        returnVal = 10
     elif value == "B":
-        returnval = 11
+        returnVal = 11
     elif value == "C":
-        returnval = 12
+        returnVal = 12
     elif value == "D":
-        returnval = 13
+        returnVal = 13
     elif value == "E":
-        returnval = 14
+        returnVal = 14
     elif value == "F":
-        returnval = 15
-    return returnval
+        returnVal = 15
+    return returnVal
 
-def validUART(value):
-    print("validUART(len({0}))".format(len(value)))
+def validate(value):
+    print("validate(len({0}))".format(len(value)))
     if len(value) != 6:
         return False
     for d in value:
-        #print("validUART({0})".format(decodeHex(d)))
+        #print("validate({0})".format(decodeHex(d)))
         try:
             i = int(decodeHex(d))
             if (i < 0) or (i > 15):
-                print("validUART: invalid value {0}".format(i))
+                print("validate: invalid value {0}".format(i))
                 return False
         except:
-            print("validUART: invalid value {0}".format(value))
+            print("validate: invalid value {0}".format(value))
             return False
         finally:
             pass
     return True
 
-def updateDigit(digit,conf,displaymotion):
+def updateDigit(digit,conf,displayMotion):
     prev = conf.read("previous")
     digit.setpreviousNumber(prev)
 
     i = conf.read("current")
-    if displaymotion == 0:
+    if displayMotion == 0:
         digit.paintFastNumber(i)
     else:
         digit.paintSlowNumber(i)
@@ -60,18 +60,14 @@ def updateDigit(digit,conf,displaymotion):
         i = 0
     conf.write("current",i)
 
-#picos must have common ground for uart to work
 def main():
-    #log = logs.logger("receivetime.log",4096)
-    #log.write("main() called")
-    baudrate = [9600, 19200, 38400, 57600, 115200]
+    baudRate = [9600, 19200, 38400, 57600, 115200]
     
     conf = config.Config("digit.json")
     extend = conf.read("extend")
     retract = conf.read("retract")
-    displaymotion = conf.read("motion")
-    digitnumber = conf.read("digit")
-    #log.write("read digit.json file")
+    displayMotion = conf.read("motion")
+    digitNumber = conf.read("digit")
 
     digit = servoDigitDisplay()
     digit.paintFastNumber(0x0E)
@@ -81,34 +77,32 @@ def main():
         digit._retractAngles[i] = retract[i]
     
     try:
-        uart = UART(0, baudrate[0], rx=Pin(1))
-        uart.init(baudrate[0], bits=8, parity=None, stop=1)
-        #log.write("baudrate = {0}".format(baudrate[0]))
+        uart = UART(0, baudRate[0], rx=Pin(1))
+        uart.init(baudRate[0], bits=8, parity=None, stop=1)
 
         prev = -1
 
         while True:
-            time.sleep(uartsignalpausetime)
+            time.sleep(waitTime)
             if uart.any() > 0:
                 b = bytearray('000000', 'utf-8')
                 uart.readinto(b)
                 d = str(b.decode('utf-8'))
-                print("validUART({0}) = {1}".format(d,validUART(d)))
-                if validUART(d):
+                print("validate({0}) = {1}".format(d,validate(d)))
+                if validate(d):
                     print("Command = {0}".format(decodeHex(d[1])))
                     command = int(decodeHex(d[0]))
-                    if (command == 4) or (command == digitnumber):
+                    if (command == 4) or (command == digitNumber):
                         command = int(decodeHex(d[1]))
                         if (command == uartCommandEnum.time):
-                            print("command to display current time for digit {0}".format(digitnumber))
-                            n = int(decodeHex(d[digitnumber+2]))
+                            print("command to display value for digit {0}".format(digitNumber))
+                            n = int(decodeHex(d[digitNumber+2]))
                             if prev != n:
                                 conf.write("current",n)
-                                #log.write("current = {0}, previous = {1}".format(n,prev))
-                                updateDigit(digit,conf,displaymotion)
+                                updateDigit(digit,conf,displayMotion)
                                 prev = n
                         if (command == uartCommandEnum.extend): #extend angle
-                            print("command to extend angles for digit {0} saved in config".format(digitnumber))
+                            print("command to extend angles for digit {0} saved in config".format(digitNumber))
                             extend = conf.read("extend")
                             value = int(d[3:len(d)])
                             print("extend = {0}, extend[{1}] = {2}".format(extend, int(d[2]), value))
@@ -116,7 +110,7 @@ def main():
                             digit._extendAngles[i] = extend
                             conf.write("extend",extend)
                         if (command == uartCommandEnum.retract): #retract angle
-                            print("command to retract angle for digit {0} saved in config".format(digitnumber))
+                            print("command to retract angle for digit {0} saved in config".format(digitNumber))
                             retract = conf.read("retract")
                             value = int(d[3:len(d)])
                             print("retract = {0}, retract[{1}] = {2}".format(retract, int(d[2]), value))
@@ -126,8 +120,8 @@ def main():
                             conf.write("retract",retract)
                         if (command == uartCommandEnum.motion):
                             print("writing to config, 'motion' = {0}".format(decodeHex(d[5])))
-                            displaymotion = int(decodeHex(d[5]))
-                            conf.write("motion",displaymotion)
+                            displayMotion = int(decodeHex(d[5]))
+                            conf.write("motion",displayMotion)
                         if (command == uartCommandEnum.current):
                             print("writing to config, 'current' = {0}".format(decodeHex(d[5])))
                             conf.write("current",int(decodeHex(d[5])))
@@ -136,6 +130,8 @@ def main():
                             conf.write("previous",int(decodeHex(d[5])))
                         if (command == decodeHex(uartCommandEnum.reset)):
                             print("reset")
+                            conf.write("current",0)
+                            conf.write("previous",14)
                             machine.reset()
     except KeyboardInterrupt:
         print('KeyboardInterrupt')

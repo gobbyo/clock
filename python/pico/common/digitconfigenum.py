@@ -6,8 +6,8 @@ class hourMinutesEnum():
     minute_tens = 2
     minute_ones = 3
 
-# This file contains the enum for the UART commands
-# Commands are used to set the time and configuration of the servoDigitDisplay
+# This file contains the UART commands
+# Commands are used to set the display value and configuration of the servoDigitDisplay
 # Commands are 6 characters long
 # The valid character set is 0-9, A-F
     # 0 = 	0011 1111   0x3F
@@ -81,7 +81,7 @@ class uartCommandEnum():
 #---------------------------------
 #  1  |  "5" | "F" | "F" | "F" | "3" |
 
-#digit 1 reset to default values
+#All digits reset to default values
 #digit | command | thousands | hundreds | tens | ones |
 #---------------------------------
-#  1  |  "F" | "F" | "F" | "F" | "F" |
+#  4  |  "F" | "F" | "F" | "F" | "F" |
