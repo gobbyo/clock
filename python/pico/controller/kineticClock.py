@@ -129,11 +129,13 @@ class kineticClock():
             r = urequests.get("https://api.open-meteo.com/v1/forecast?latitude={0}&longitude={1}&current_weather=true&hourly=relativehumidity_2m".format(lat,lon))
             j = json.loads(r.content)
             temperature = j['current_weather']['temperature']
-            conf.write("tempoutdoor",round(32+(9/5*temperature)))
-            print("tempoutdoor = {0}".format(round(32+(9/5*temperature))))
+            temp = round(float(temperature))
+            conf.write("tempoutdoor",temp)
+            print("setting temp outdoor = {0}".format(temp))
             humidity = j['hourly']['relativehumidity_2m'][0]
-            conf.write("humidoutdoor",humidity)
-            print("humidoutdoor = {0}".format(humidity))
+            humid = round(float(humidity))
+            conf.write("humidoutdoor",humid)
+            print("setting humidity outdoor = {0}".format(humid))
         except Exception as e:
             print("Exception: {}".format(e))
         finally:
@@ -188,6 +190,7 @@ class kineticClock():
     def displayTemp(self,conf):
         print("kineticClock.displayTemp()")
         displayIndoorTemp = conf.read("displayIndoorTemp")
+
         if displayIndoorTemp == 1:
             self._colons.extend(True, False)
             print("display indoor temp")
@@ -197,13 +200,21 @@ class kineticClock():
             print("display outdoor temp")
             temp = conf.read("tempoutdoor")
         
-        p = round((temp*1.8)+32)
+        tempCF = conf.read("tempCF")
+        if tempCF == "F":
+            p = round((temp*1.8)+32)
+        else:
+            p = temp
         if p < 0:
             p *= -1
         t = "{0}".format(p)
         if len(t) > 2:
             t = t[1:]
-        curTemp = "40{0:02}AD".format(int(t))
+        
+        if tempCF == "F":
+            curTemp = "40{0:02}AD".format(int(t))
+        else:
+            curTemp = "40{0:02}AC".format(int(t))
         b = bytearray(curTemp, 'utf-8')                    
         self._uartTime.write(b)
         print("temp = {0}".format(curTemp))

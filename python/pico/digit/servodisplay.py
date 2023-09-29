@@ -148,13 +148,13 @@ class servoDigitDisplay:
             if result[i] == 1:
                 self._switches[i].on()
                 self._servos[i].move(extendAngles[i]) #finish any leftover
-                time.sleep(.3)
+                time.sleep(.2)
                 self._switches[i].off()
 
             if result[i] == 0:
                 self._switches[i].on()
                 self._servos[i].move(retractAngles[i]) #finish any leftover
-                time.sleep(.3)
+                time.sleep(.2)
                 self._switches[i].off()
             
         for i in range(len(result)):

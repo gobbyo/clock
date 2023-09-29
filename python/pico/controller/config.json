@@ -3,6 +3,7 @@
     "displayIndoorTemp": 1, 
     "tempHumidMinuteSchedule": 5, 
     "wifiHourlySchedule": 4, 
+    "tempCF": "F",
     "display24Hour": false, 
     "tunit": "f",
     "lat": 47.626,
