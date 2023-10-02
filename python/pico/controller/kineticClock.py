@@ -48,18 +48,9 @@ class kineticClock():
         self._uart.write(b)
         time.sleep(2)
 
-    def _sendDisplayUART(self, data):
-        pause = 0.25
-        if self.motion.value() == 1:
-            pause = 0.75
-        i = 3
-        while i >= 0:
-            d = "{0}{1}".format(i,data[1:6])
-            b = bytearray(d, 'utf-8')
-            self._uart.write(b)
-            print("UART = {0}".format(b))
-            time.sleep(pause)
-            i -= 1
+    def _sendDisplayUART(self,data):
+        b = bytearray(data, 'utf-8')
+        self._uart.write(b)
             
     def motion(self):
         curMotion = self._motion.value()

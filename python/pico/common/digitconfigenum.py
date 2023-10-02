@@ -36,7 +36,7 @@ class uartCommandEnum():
     extend = 3
     current = 4
     previous = 5
-    hybernate = 0x0F
+    reset = 0x0F
 
 #time setting for all digits
 #digit | command | 0 | 1 | 2 | 3 |
