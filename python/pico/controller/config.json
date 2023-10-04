@@ -11,5 +11,6 @@
     "humidreading": 63,
     "tempreading": 20, 
     "humidoutdoor": 46, 
-    "tempoutdoor": 65
+    "tempoutdoor": 65,
+    "hybernate": 1
 }

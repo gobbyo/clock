@@ -36,6 +36,7 @@ class uartCommandEnum():
     extend = 3
     current = 4
     previous = 5
+    hybernate = 6
     reset = 0x0F
 
 #time setting for all digits
@@ -80,6 +81,11 @@ class uartCommandEnum():
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
 #  1  |  "5" | "F" | "F" | "F" | "3" |
+
+#All digits hybernate in minutes, e.g. "A" (10 minutes)
+#digit | command | segment | angle hundreds | angle tens | angle ones |
+#---------------------------------
+#  4  |  "6" | "A" | "A" | "A" | "A" |
 
 #All digits reset to default values
 #digit | command | thousands | hundreds | tens | ones |

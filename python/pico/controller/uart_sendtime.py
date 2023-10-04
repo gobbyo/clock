@@ -79,6 +79,10 @@ def main():
             #check switch to see if state has changed
             #if so, a UART message is sent to each digit
             clock.motion()
+
+            #check switch to see if pressed for hybernation.
+            #if pressed, then send a hybernate message to each digit, then sleep
+            clock.hybernate(conf)
             
             time.sleep(1)
 

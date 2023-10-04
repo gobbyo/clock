@@ -10,6 +10,7 @@ from servocolons import servoColonsDisplay
 
 motionPin = const(6)
 hour24TimePin = const(7)
+hybernatePin = const(8)
 tempSensorPin = const(20)
 tempSwitchPin = const(0)
 disconnectedLEDpin = const(18)
@@ -30,6 +31,7 @@ class kineticClock():
         self._sensor = DHT11(machine.Pin(tempSensorPin, machine.Pin.OUT, pull=machine.Pin.PULL_DOWN))
         self._motion = machine.Pin(motionPin, machine.Pin.IN, machine.Pin.PULL_UP)
         self._display24Hour = machine.Pin(hour24TimePin, machine.Pin.IN, machine.Pin.PULL_UP)
+        self._hybernate = machine.Pin(hybernatePin, machine.Pin.IN, machine.Pin.PULL_UP)
         self._switch = machine.Pin(tempSwitchPin, machine.Pin.OUT,value=0)
         self._colons = servoColonsDisplay(conf)
         self._currentTime = "{0}{1:02}".format(0, 0)
@@ -51,6 +53,27 @@ class kineticClock():
     def _sendDisplayUART(self,data):
         b = bytearray(data, 'utf-8')
         self._uart.write(b)
+
+    def hybernate(self, conf):
+        if self._hybernate.value() == 0:
+            for i in range(0,3):
+                self._disconnectedLED.on()
+                time.sleep(0.75)
+                self._disconnectedLED.off()
+                time.sleep(0.25)
+            minutes = int(conf.read("hybernate"))
+            print("kineticClock hybernate for {0} minutes".format(minutes))
+            self._colons.retract(True, True)
+            b = bytearray('40EEEE', 'utf-8')
+            self._uart.write(b)
+            time.sleep(1)
+            msg = '46'
+            for i in range(0,4):
+                msg = msg + str(minutes)
+            b = bytearray(msg, 'utf-8')
+            self._sendDisplayUART(b)
+            machine.deepsleep(minutes * 60 * 1000)
+            machine.reset()
             
     def motion(self):
         curMotion = self._motion.value()
