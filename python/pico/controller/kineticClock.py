@@ -8,7 +8,6 @@ import urequests
 import secrets
 from servocolons import servoColonsDisplay
 
-motionPin = const(6)
 hour24TimePin = const(7)
 hybernatePin = const(8)
 tempSensorPin = const(20)
@@ -29,15 +28,13 @@ class kineticClock():
         self._uart = machine.UART(0, baudRate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
         self._uart.init(baudRate[0], bits=8, parity=None, stop=1)
         self._sensor = DHT11(machine.Pin(tempSensorPin, machine.Pin.OUT, pull=machine.Pin.PULL_DOWN))
-        self._motion = machine.Pin(motionPin, machine.Pin.IN, machine.Pin.PULL_UP)
-        self._display24Hour = machine.Pin(hour24TimePin, machine.Pin.IN, machine.Pin.PULL_UP)
-        self._hybernate = machine.Pin(hybernatePin, machine.Pin.IN, machine.Pin.PULL_UP)
+        self._display24Hour = machine.Pin(hour24TimePin, machine.Pin.IN, machine.Pin.PULL_DOWN)
+        self._hybernate = machine.Pin(hybernatePin, machine.Pin.IN, machine.Pin.PULL_DOWN)
         self._switch = machine.Pin(tempSwitchPin, machine.Pin.OUT,value=0)
         self._colons = servoColonsDisplay(conf)
         self._currentTime = "{0}{1:02}".format(0, 0)
         self._wifi = picowifi.hotspot(secrets.usr, secrets.pwd)
         self._sync = syncRTC.syncRTC()
-        self._lastMotion = 0
     
     def __del__(self):
         print("kineticClock.__del__()")
@@ -55,13 +52,32 @@ class kineticClock():
         self._uart.write(b)
 
     def hybernate(self, conf):
+        sleep = conf.read("sleep")
+        minutes = conf.read("hybernate")
+        dt = self._sync.rtc.datetime()
+        curtime = "{0:02}{1:02}".format(dt[4],dt[5])
+        if sleep == curtime:
+            print("kineticClock hybernate")
+            self._colons.retract(True, True)
+            b = bytearray('40EEEE', 'utf-8')
+            self._uart.write(b)
+            msg = '46'
+            for i in range(0,4):
+                msg = msg + "1"
+            b = bytearray(msg, 'utf-8')
+            self._sendDisplayUART(b)
+            wake = conf.read("wake")
+            while curtime != wake:
+                dt = self._sync.rtc.datetime()
+                curtime = "{0:02}{1:02}".format(dt[4],dt[5])
+                print("sleeping {0}(wake time) != {1}(cur time)".format(wake, curtime))
+                time.sleep(30)
         if self._hybernate.value() == 0:
             for i in range(0,3):
                 self._disconnectedLED.on()
                 time.sleep(0.75)
                 self._disconnectedLED.off()
                 time.sleep(0.25)
-            minutes = int(conf.read("hybernate"))
             print("kineticClock hybernate for {0} minutes".format(minutes))
             self._colons.retract(True, True)
             b = bytearray('40EEEE', 'utf-8')
@@ -72,21 +88,9 @@ class kineticClock():
                 msg = msg + str(minutes)
             b = bytearray(msg, 'utf-8')
             self._sendDisplayUART(b)
-            machine.deepsleep(minutes * 60 * 1000)
-            machine.reset()
-            
-    def motion(self):
-        curMotion = self._motion.value()
-        if self._lastMotion != curMotion:
-            if curMotion == 0:
-                print("fast digit change speed")
-                self._uart.write(bytearray('41FFF0', 'utf-8'))
-            else:
-                print("slow digit change speed")
-                self._uart.write(bytearray('41FFF1', 'utf-8'))
-
-            self._lastMotion = curMotion
-        return curMotion
+            while self._hybernate.value() == 0:
+                print("sleeping, waiting for switch to turn ON")
+                time.sleep(30)
     
     def connectWifi(self):
         connected = False
@@ -131,12 +135,15 @@ class kineticClock():
             self._connectedLED.off()
             
     def formatHour(self, hour):
-        display24Hour = self._display24Hour.value()
-        if display24Hour == 0:
+        if self._display24Hour.value() == 0:
+            print("display 12 hour time")
             if hour > 12:
                 hour -= 12
             if hour == 0:
                 hour = 12
+        else:
+            print("display 24 hour time")
+            
         h = strHour = "{0:02}".format(hour)
         if strHour[0] == "0":
             strHour = "E" + h[1]

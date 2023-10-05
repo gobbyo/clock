@@ -15,7 +15,6 @@ def main():
         
         clock.setIndoorTemp(conf)
         clock.setOutdoorTemp(conf)
-        clock.motion()
 
         itinerary = schedule()
         lastMinute = 0
@@ -26,6 +25,8 @@ def main():
             elapsedMinutes = round(clock._sync.rtc.datetime()[timeEnum.minutes])
             elapsedHours = round(clock._sync.rtc.datetime()[timeEnum.hours])
             print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
+            #check state of switch
+            clock.hybernate(conf)
 
             if elapsedMinutes != lastMinute:
                 itinerary.initSecondSchedule()
@@ -75,14 +76,6 @@ def main():
                 clock.setOutdoorTemp(conf)
                 itinerary.minutesSchedule[elapsedMinutes] = -1
                 print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
-            
-            #check switch to see if state has changed
-            #if so, a UART message is sent to each digit
-            clock.motion()
-
-            #check switch to see if pressed for hybernation.
-            #if pressed, then send a hybernate message to each digit, then sleep
-            clock.hybernate(conf)
             
             time.sleep(1)
 

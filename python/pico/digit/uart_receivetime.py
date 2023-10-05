@@ -128,6 +128,11 @@ def main():
                         if (command == uartCommandEnum.previous):
                             print("writing to config, 'previous' = {0}".format(decodeHex(d[5])))
                             conf.write("previous",int(decodeHex(d[5])))
+                        if (command == uartCommandEnum.hybernate):
+                            print("hybernate")
+                            digit.paintFastNumber(0x0E)
+                            n = int(decodeHex(d[digitNumber+2]))
+                            machine.lightsleep(n * 1000)
                         if (command == decodeHex(uartCommandEnum.reset)):
                             print("reset")
                             conf.write("current",0)

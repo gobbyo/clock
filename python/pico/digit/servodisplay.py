@@ -9,7 +9,7 @@ class servoDigitDisplay:
     _extendAngles = [0,0,0,0,0,0,0]
     _retractAngles = [90,90,90,90,90,90,90]
     _rateofmovement = 3 #degrees
-    _servospeed = 0.03 #default servo speed
+    _servospeed = 0.01 #default servo speed
     _servowait = 0.4
     # 0 = 	0011 1111   0x3F
     # 1 =	0000 0110   0x06
@@ -113,13 +113,12 @@ class servoDigitDisplay:
 
         #Start change of digit, turn on power for servos, turn off LEDs
         for i in range(0,len(result)):
+            self._switches[i].on()
             if result[i] == 1:
                 #print("extend start {0}".format(i))
-                self._switches[i].on()
                 self._leds[i].off()
             if result[i] == 0:
                 #print("retract start {0}".format(i))
-                self._switches[i].on()
                 self._leds[i].off()
 
         #Move segments to change digit
@@ -138,26 +137,23 @@ class servoDigitDisplay:
                     if extendAngles[i] <= self._retractAngles[i]:
                         #print("{0} retract angle = {1}".format(i, extendAngles[i]))
                         self._servos[i].move(extendAngles[i])
-            time.sleep(self._servospeed)
+                time.sleep(self._servospeed)
 
         for i in range(len(result)):
             self._switches[i].off()
 
         #Finish moving segments, turn off power to servos, turn on LEDs
         for i in range(len(result)):
+            self._switches[i].on()
             if result[i] == 1:
-                self._switches[i].on()
                 self._servos[i].move(extendAngles[i]) #finish any leftover
                 time.sleep(.2)
-                self._switches[i].off()
-
             if result[i] == 0:
-                self._switches[i].on()
                 self._servos[i].move(retractAngles[i]) #finish any leftover
                 time.sleep(.2)
-                self._switches[i].off()
             
         for i in range(len(result)):
+            self._switches[i].off()
             if result[i] == 1:
                 self._leds[i].on()
             if result[i] == 0:
