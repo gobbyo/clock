@@ -6,6 +6,7 @@ from dht11 import DHT11
 import json
 import urequests
 import secrets
+from uarttools import encodeHex, decodeHex
 from servocolons import servoColonsDisplay
 
 hour24TimePin = const(7)
@@ -53,7 +54,7 @@ class kineticClock():
 
     def hybernate(self, conf):
         sleep = conf.read("sleep")
-        minutes = conf.read("hybernate")
+        seconds = int(decodeHex(conf.read("hybernate")))
         dt = self._sync.rtc.datetime()
         curtime = "{0:02}{1:02}".format(dt[4],dt[5])
         if sleep == curtime:
@@ -63,7 +64,7 @@ class kineticClock():
             self._uart.write(b)
             msg = '46'
             for i in range(0,4):
-                msg = msg + "1"
+                msg = msg + str(seconds)
             b = bytearray(msg, 'utf-8')
             self._sendDisplayUART(b)
             wake = conf.read("wake")
@@ -71,27 +72,29 @@ class kineticClock():
                 dt = self._sync.rtc.datetime()
                 curtime = "{0:02}{1:02}".format(dt[4],dt[5])
                 print("sleeping {0}(wake time) != {1}(cur time)".format(wake, curtime))
-                time.sleep(30)
+                self._sendDisplayUART(b)
+                time.sleep(seconds + 2)
         if self._hybernate.value() == 0:
             for i in range(0,3):
                 self._disconnectedLED.on()
                 time.sleep(0.75)
                 self._disconnectedLED.off()
                 time.sleep(0.25)
-            print("kineticClock hybernate for {0} minutes".format(minutes))
+            print("kineticClock hybernate for {0} seconds".format(seconds))
             self._colons.retract(True, True)
             b = bytearray('40EEEE', 'utf-8')
             self._uart.write(b)
             time.sleep(1)
             msg = '46'
             for i in range(0,4):
-                msg = msg + str(minutes)
+                msg = msg + encodeHex(seconds)
             b = bytearray(msg, 'utf-8')
             self._sendDisplayUART(b)
             while self._hybernate.value() == 0:
                 print("sleeping, waiting for switch to turn ON")
-                time.sleep(30)
-    
+                self._sendDisplayUART(b)
+                time.sleep(seconds + 0.5) 
+                
     def connectWifi(self):
         connected = False
         self._disconnectedLED.on()

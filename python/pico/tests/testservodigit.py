@@ -22,6 +22,7 @@ def updateDigit(digit,conf):
     if i >= len(digit._segnum):
         i = 0
     conf.write("current",i)
+    time.sleep(.2)
     deepsleep = conf.read("deepsleep")
     if deepsleep == 1:
         machine.deepsleep(5000)

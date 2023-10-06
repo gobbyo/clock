@@ -14,6 +14,13 @@ def decodeHex(value):
         returnVal = 15
     return returnVal
 
+def encodeHex(value):
+    if value < 10:
+        return str(value)
+    if value > 16:
+        return 'F'
+    return str(hex(value)).upper()[2:]
+
 def validate(value):
     print("validate(len({0}))".format(len(value)))
     if len(value) != 6:

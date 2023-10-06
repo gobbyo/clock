@@ -130,11 +130,11 @@ def main():
                             conf.write("previous",int(decodeHex(d[5])))
                         if (command == uartCommandEnum.hybernate):
                             print("hybernate")
-                            digit.paintFastNumber(0x0E)
                             n = int(decodeHex(d[digitNumber+2]))
-                            machine.lightsleep(n * 1000)
+                            machine.deepsleep(n * 1000)
                         if (command == decodeHex(uartCommandEnum.reset)):
                             print("reset")
+                            digit.paintFastNumber(0x0E)
                             conf.write("current",0)
                             conf.write("previous",14)
                             machine.reset()

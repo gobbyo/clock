@@ -1,9 +1,1 @@
-{
-    "previous": 14, 
-    "deepsleep": 0, 
-    "extend": [20, 10, 20, 10, 10, 10, 20], 
-    "current": 0, 
-    "retract": [100, 105, 100, 100, 100, 100, 110],
-    "digit": 3,
-    "motion": 0
-}
+{"current": 0, "digit": 3, "extend": [10, 10, 20, 20, 10, 10, 20], "previous": 14, "retract": [100, 105, 100, 100, 100, 100, 110], "deepsleep": 0, "motion": 0}

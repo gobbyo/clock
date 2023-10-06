@@ -94,7 +94,6 @@ class servoDigitDisplay:
             if input[i] == 0:
                 if self._previousNumber[i] == 1:
                     self.retract(i)
-            #time.sleep(self._servowait)
 
         self._previousNumber = input
     
