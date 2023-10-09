@@ -37,9 +37,10 @@ class uartCommandEnum():
     current = 4
     previous = 5
     hybernate = 6
+    timedhybernation = 7
     reset = 0x0F
 
-#time setting for all digits
+#time setting for all digits, e.g. 7:49 AM
 #digit | command | 0 | 1 | 2 | 3 |
 #---------------------------------
 #  4  | "0" | "0" | "7" | "4" | "9" |
@@ -51,6 +52,7 @@ class uartCommandEnum():
 #  4  | "1" | "F" | "F" | "F" | 0 |
 
 #digit 1 retract angle setting, e.g. [105, 100, 95, 110, 100, 100, 110]
+#valid range is 0 to 180 degrees. Should be +/- 20 degrees from 90 degrees
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
 #  1  | "2" | "0" | "1" | "0" | "5" |
@@ -62,6 +64,7 @@ class uartCommandEnum():
 #  1  | "2" | "6" | "1" | "1" | "0" |
 
 #digit 1 extend angle setting, e.g. [20, 10, 10, 10, 10, 15, 20]
+#valid range is 0 to 180 degrees. Should be 0 to 20 degrees from 0 degrees.
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
 #  1  |  "3" | "0" | "0" | "2" | "0" |
@@ -82,12 +85,13 @@ class uartCommandEnum():
 #---------------------------------
 #  1  |  "5" | "F" | "F" | "F" | "3" |
 
-#All digits hybernate in minutes, e.g. "A" (10 minutes)
+#digit 1 hybernate in minutes, e.g. "480" (minutes or 8 hours)
+#valid range is 1 to 9999 minutes (or 166.65 hours)
 #digit | command | segment | angle hundreds | angle tens | angle ones |
 #---------------------------------
-#  4  |  "6" | "A" | "A" | "A" | "A" |
+#  1  |  "6" | "F" | "4" | "8" | "0" |
 
-#All digits reset to default values
+#all digits reset to default values
 #digit | command | thousands | hundreds | tens | ones |
 #---------------------------------
 #  4  |  "F" | "F" | "F" | "F" | "F" |

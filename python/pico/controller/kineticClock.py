@@ -32,7 +32,7 @@ class kineticClock():
         self._display24Hour = machine.Pin(hour24TimePin, machine.Pin.IN, machine.Pin.PULL_DOWN)
         self._hybernate = machine.Pin(hybernatePin, machine.Pin.IN, machine.Pin.PULL_DOWN)
         self._switch = machine.Pin(tempSwitchPin, machine.Pin.OUT,value=0)
-        self._colons = servoColonsDisplay(conf)
+        self._colons = servoColonsDisplay("config.json")
         self._currentTime = "{0}{1:02}".format(0, 0)
         self._wifi = picowifi.hotspot(secrets.usr, secrets.pwd)
         self._sync = syncRTC.syncRTC()
@@ -52,36 +52,20 @@ class kineticClock():
         b = bytearray(data, 'utf-8')
         self._uart.write(b)
 
-    def hybernate(self, conf):
-        sleep = conf.read("sleep")
-        seconds = int(decodeHex(conf.read("hybernate")))
-        dt = self._sync.rtc.datetime()
-        curtime = "{0:02}{1:02}".format(dt[4],dt[5])
-        if sleep == curtime:
-            print("kineticClock hybernate")
+    def hybernateSwitch(self, conf):
+        if self._hybernate.value() == 0:
+            print("Hybernate by switch, switch = OFF")
             self._colons.retract(True, True)
             b = bytearray('40EEEE', 'utf-8')
             self._uart.write(b)
-            msg = '46'
-            for i in range(0,4):
-                msg = msg + str(seconds)
-            b = bytearray(msg, 'utf-8')
-            self._sendDisplayUART(b)
-            wake = conf.read("wake")
-            while curtime != wake:
-                dt = self._sync.rtc.datetime()
-                curtime = "{0:02}{1:02}".format(dt[4],dt[5])
-                print("sleeping {0}(wake time) != {1}(cur time)".format(wake, curtime))
-                self._sendDisplayUART(b)
-                time.sleep(seconds + 2)
-        if self._hybernate.value() == 0:
+            
             for i in range(0,3):
                 self._disconnectedLED.on()
                 time.sleep(0.75)
                 self._disconnectedLED.off()
                 time.sleep(0.25)
-            print("kineticClock hybernate for {0} seconds".format(seconds))
-            self._colons.retract(True, True)
+            seconds = int(decodeHex(conf.read("hybernate")))
+            print("Deep sleep for {0} seconds".format(seconds))
             b = bytearray('40EEEE', 'utf-8')
             self._uart.write(b)
             time.sleep(1)
@@ -91,9 +75,50 @@ class kineticClock():
             b = bytearray(msg, 'utf-8')
             self._sendDisplayUART(b)
             while self._hybernate.value() == 0:
-                print("sleeping, waiting for switch to turn ON")
+                print("Waiting for switch to turn ON")
                 self._sendDisplayUART(b)
-                time.sleep(seconds + 0.5) 
+                for i in range(0,seconds+2):
+                    time.sleep(1)
+    
+    def hybernateTime(self, conf):
+        sleep = conf.read("sleep")
+        dt = self._sync.rtc.datetime()
+        curtime = "{0:02}{1:02}".format(dt[4],dt[5])
+        if sleep == curtime:
+            print("Hybernate by time, sleep = current time")
+            self._colons.retract(True, True)
+            b = bytearray('40EEEE', 'utf-8')
+            self._uart.write(b)
+            
+            for i in range(0,3):
+                self._disconnectedLED.on()
+                time.sleep(0.75)
+                self._disconnectedLED.off()
+                time.sleep(0.25)
+            wake = conf.read("wake")
+            print("wake = {0}".format(wake))
+            j = int(wake)
+            i = 0
+            if int(wake) > 60:
+                i = round(int(wake) / 60)   
+                while i > 0:
+                    for a in range(0,4):
+                        msg = '{0}6FF60'.format(a)
+                        b = bytearray(msg, 'utf-8')
+                        self._sendDisplayUART(b)
+                        print("sleep message sent to digit {0}, msg = {1}".format(a,msg))
+                    time.sleep((60 * 60) + 1)
+                    i -= 1
+                j %= 60
+            
+            if j > 0:
+                for a in range(0,4):
+                    msg = '{0}6FFF0'.format(a)
+                    msg = msg[0:6-len(str(j))] + str(j)
+                    b = bytearray(msg, 'utf-8')
+                    self._sendDisplayUART(b)
+                    print("sleep message sent to digit {0}, msg = {1}".format(a, msg))
+                time.sleep((j * 60)+1)
                 
     def connectWifi(self):
         connected = False

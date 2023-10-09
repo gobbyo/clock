@@ -104,17 +104,19 @@ def main():
                         if (command == uartCommandEnum.extend): #extend angle
                             print("command to extend angles for digit {0} saved in config".format(digitNumber))
                             extend = conf.read("extend")
+                            i = int(d[2])
                             value = int(d[3:len(d)])
-                            print("extend = {0}, extend[{1}] = {2}".format(extend, int(d[2]), value))
-                            extend[int(d[2])] = value
+                            print("extend = {0}, extend[{1}] = {2}".format(extend, i, value))
+                            extend[i] = value
                             digit._extendAngles[i] = extend
                             conf.write("extend",extend)
                         if (command == uartCommandEnum.retract): #retract angle
                             print("command to retract angle for digit {0} saved in config".format(digitNumber))
                             retract = conf.read("retract")
+                            i = int(d[2])
                             value = int(d[3:len(d)])
-                            print("retract = {0}, retract[{1}] = {2}".format(retract, int(d[2]), value))
-                            retract[int(d[2])] = value
+                            print("retract = {0}, retract[{1}] = {2}".format(retract, i, value))
+                            retract[i] = value
                             digit._retractAngles[i] = retract
                             print("writing to config, retract = {0}".format(retract))
                             conf.write("retract",retract)
@@ -131,6 +133,15 @@ def main():
                         if (command == uartCommandEnum.hybernate):
                             print("hybernate")
                             n = int(decodeHex(d[digitNumber+2]))
+                            machine.deepsleep(n * 1000)
+                            machine.reset()
+                        if (command == uartCommandEnum.timedhybernation):
+                            print("timed hybernation")
+                            i = len(d)
+                            while i > 0 and d[i-1] == "F":
+                                i -= 1
+                            n = int(int(d[3:i])) * 60
+                            conf.write("timed hybernation for {0} minute(s)", n)
                             machine.deepsleep(n * 1000)
                         if (command == decodeHex(uartCommandEnum.reset)):
                             print("reset")

@@ -12,7 +12,7 @@
     "tempreading": 20, 
     "humidoutdoor": 46, 
     "tempoutdoor": 65,
-    "hybernate": 1,
-    "sleep": "2030",
-    "wake": "2031"
+    "hybernate": "F",
+    "sleep": "2230",
+    "wake": "480"
 }

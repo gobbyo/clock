@@ -26,7 +26,9 @@ def main():
             elapsedHours = round(clock._sync.rtc.datetime()[timeEnum.hours])
             print("elapsed {0}:{1}:{2}".format(elapsedHours, elapsedMinutes, elapsedSeconds))
             #check state of switch
-            clock.hybernate(conf)
+            clock.hybernateSwitch(conf)
+            #check state of time
+            clock.hybernateTime(conf)
 
             if elapsedMinutes != lastMinute:
                 itinerary.initSecondSchedule()
