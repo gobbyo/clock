@@ -5,6 +5,7 @@ import gc
 import uio
 import time
 import config
+import machine
 
 #purpose of this class is to bootstrap the PICO W connectivity by and setting the wifi ssid and password
 #this class will also allow the user to set the temperature and humidity to be displayed on the pico
@@ -95,6 +96,7 @@ class hotspot:
             max_wait -= 1
             print('waiting for connection...')
             time.sleep(1)
+        machine.reset()
         return False
 
     def connectAdmin(self):

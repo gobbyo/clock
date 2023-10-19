@@ -137,10 +137,7 @@ def main():
                             machine.reset()
                         if (command == uartCommandEnum.timedhybernation):
                             print("timed hybernation")
-                            i = len(d)
-                            while i > 0 and d[i-1] == "F":
-                                i -= 1
-                            n = int(int(d[3:i])) * 60
+                            n = int(d[2:6]) * 60
                             conf.write("timed hybernation for {0} minute(s)", n)
                             machine.deepsleep(n * 1000)
                         if (command == decodeHex(uartCommandEnum.reset)):

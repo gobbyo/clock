@@ -103,17 +103,17 @@ class kineticClock():
                 i = round(int(wake) / 60)   
                 while i > 0:
                     for a in range(0,4):
-                        msg = '{0}6FF60'.format(a)
+                        msg = '{0}70060'.format(a)
                         b = bytearray(msg, 'utf-8')
                         self._sendDisplayUART(b)
                         print("sleep message sent to digit {0}, msg = {1}".format(a,msg))
-                    time.sleep((60 * 60) + 1)
+                    time.sleep((60 * 60) + 5)
                     i -= 1
                 j %= 60
             
             if j > 0:
                 for a in range(0,4):
-                    msg = '{0}6FFF0'.format(a)
+                    msg = '{0}70000'.format(a)
                     msg = msg[0:6-len(str(j))] + str(j)
                     b = bytearray(msg, 'utf-8')
                     self._sendDisplayUART(b)

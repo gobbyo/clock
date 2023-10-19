@@ -76,20 +76,26 @@ class uartCommandEnum():
 #  1  |  "3" | "6" | "0" | "2" | "0" |
 
 #digit 1 current value, e.g. 0
-#digit | command | segment | angle hundreds | angle tens | angle ones |
+#digit | command | value | value | value | value |
 #---------------------------------
 #  1  |  "4" | "F" | "F" | "F" | "0" |
 
 #digit 1 previous value, e.g. 3
-#digit | command | segment | angle hundreds | angle tens | angle ones |
+#digit | command | value | value | value | value |
 #---------------------------------
 #  1  |  "5" | "F" | "F" | "F" | "3" |
 
-#digit 1 hybernate in minutes, e.g. "480" (minutes or 8 hours)
-#valid range is 1 to 9999 minutes (or 166.65 hours)
-#digit | command | segment | angle hundreds | angle tens | angle ones |
+#digit 1 hybernate in seconds, e.g. E is 15 seconds
+#valid range is 1 to F (16) seconds
+#digit | command | value | value | value | value |
 #---------------------------------
-#  1  |  "6" | "F" | "4" | "8" | "0" |
+#  1  |  "6" | "F" | "F" | "F" | "F" |
+
+#digit 1 hybernate in minutes, e.g. "480" (minutes or 8 hours)
+#valid range is 1 to 60 minutes (deepsleep cannot go beyond 60 minutes)
+#digit | command | value | hundreds | tens | ones |
+#---------------------------------
+#  1  |  "7" | "F" | "4" | "8" | "0" |
 
 #all digits reset to default values
 #digit | command | thousands | hundreds | tens | ones |

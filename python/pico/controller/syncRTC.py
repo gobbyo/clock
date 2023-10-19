@@ -3,6 +3,7 @@ import network
 import urequests
 import json
 import time
+import machine
 
 externalIPAddressAPI=const("http://api.ipify.org")
 class syncRTC:

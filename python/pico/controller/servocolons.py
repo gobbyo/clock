@@ -4,8 +4,8 @@ from config import Config
 import time
 
 class servoColonsDisplay:
-    _segpins = [3,5] # upper, lower
-    _switchpins = [14,15] #upper, lower
+    _segpins = [2,3] # upper, lower
+    _switchpins = [9,10] #upper, lower
     _ledpins = [16,17] #upper, lower
     _extendAngles = [20,10]
     _retractAngles = [110,100]
