@@ -8,6 +8,7 @@ import urequests
 import secrets
 from uarttools import encodeHex, decodeHex
 from servocolons import servoColonsDisplay
+from digitconfigenum import uartCommandEnum
 
 hour24TimePin = const(7)
 hybernatePin = const(8)
@@ -39,12 +40,12 @@ class kineticClock():
     
     def __del__(self):
         print("kineticClock.__del__()")
-        b = bytearray('40EEEE', 'utf-8')
+        b = bytearray('4{0}EEEE'.format(uartCommandEnum.time), 'utf-8')
         self._uart.write(b)
         time.sleep(1)
         self._colons.retract(True, True)
         time.sleep(1)
-        b = bytearray('4FFFFF', 'utf-8')
+        b = bytearray('4{0}FFFF'.format(uartCommandEnum.reset), 'utf-8')
         self._uart.write(b)
         time.sleep(2)
 
@@ -52,11 +53,19 @@ class kineticClock():
         b = bytearray(data, 'utf-8')
         self._uart.write(b)
 
+    def admin(self):
+        if self._hybernate.value() == 0:
+            self._connectedLED.on()
+            self._disconnectedLED.on()
+            self._wifi.connectAdmin()
+            self._connectedLED.off()
+            self._disconnectedLED.off()
+
     def hybernateSwitch(self, conf):
         if self._hybernate.value() == 0:
             print("Hybernate by switch, switch = OFF")
             self._colons.retract(True, True)
-            b = bytearray('40EEEE', 'utf-8')
+            b = bytearray('4{0}EEEE'.format(uartCommandEnum.time), 'utf-8')
             self._uart.write(b)
             
             for i in range(0,3):
@@ -66,7 +75,7 @@ class kineticClock():
                 time.sleep(0.25)
             seconds = int(decodeHex(conf.read("hybernate")))
             print("Deep sleep for {0} seconds".format(seconds))
-            b = bytearray('40EEEE', 'utf-8')
+            b = bytearray('4{0}EEEE'.format(uartCommandEnum.time), 'utf-8')
             self._uart.write(b)
             time.sleep(1)
             msg = '46'
@@ -87,7 +96,7 @@ class kineticClock():
         if sleep == curtime:
             print("Hybernate by time, sleep = current time")
             self._colons.retract(True, True)
-            b = bytearray('40EEEE', 'utf-8')
+            b = bytearray('4{0}EEEE'.format(uartCommandEnum.time), 'utf-8')
             self._uart.write(b)
             
             for i in range(0,3):
@@ -103,7 +112,7 @@ class kineticClock():
                 i = round(int(wake) / 60)   
                 while i > 0:
                     for a in range(0,4):
-                        msg = '{0}70060'.format(a)
+                        msg = '{0}{1}0060'.format(a, uartCommandEnum.timedhybernation)
                         b = bytearray(msg, 'utf-8')
                         self._sendDisplayUART(b)
                         print("sleep message sent to digit {0}, msg = {1}".format(a,msg))
@@ -113,7 +122,7 @@ class kineticClock():
             
             if j > 0:
                 for a in range(0,4):
-                    msg = '{0}70000'.format(a)
+                    msg = '{0}{1}0000'.format(a, uartCommandEnum.timedhybernation)
                     msg = msg[0:6-len(str(j))] + str(j)
                     b = bytearray(msg, 'utf-8')
                     self._sendDisplayUART(b)
@@ -230,15 +239,17 @@ class kineticClock():
     def displayTime(self, sync):
         print("kineticClock.displayTime()")
         self._colons.extend(True, True)     
-        currentTime = "40{0}{1:02}".format(self.formatHour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
+        currentTime = "4{0}{1}{2:02}".format(uartCommandEnum.time, self.formatHour(sync.rtc.datetime()[4]), sync.rtc.datetime()[5])
         print("display time = {0}".format(currentTime[2:4]))
         self._sendDisplayUART(currentTime)
     
     def displayDate(self):
         print("kineticClock.displayDate()")   
-        self._colons.retract(True, True)            
-        currentDate = "40{0:02}{1:02}".format(self._sync.rtc.datetime()[1], self._sync.rtc.datetime()[2])
-        print("display date = {0}".format(currentDate[2:4]))
+        self._colons.retract(True, True)      
+        dt = self._sync.rtc.datetime()
+        print("dt = {0}".format(dt))  
+        currentDate = "4{0}{1:02}{2:02}".format(uartCommandEnum.time, dt[1], dt[2])
+        print("display date = {0}".format(currentDate))
         self._sendDisplayUART(currentDate)
     
     def displayTemp(self,conf):
@@ -269,9 +280,9 @@ class kineticClock():
         if len(t) > 2:
             t = t[1:]
         if tempCF == "F":
-            curTemp = "40{0:02}AD".format(int(t))
+            curTemp = "4{0}{1:02}AD".format(uartCommandEnum.time, int(t))
         else:
-            curTemp = "40{0:02}AC".format(int(t))
+            curTemp = "4{0}{0:02}AC".format(uartCommandEnum.time, int(t))
         
         print("display temp = {0}".format(curTemp))
         self._sendDisplayUART(curTemp)
@@ -283,14 +294,14 @@ class kineticClock():
         if displayIndoorTemp == 1:
             h = conf.read("humidreading")
             self._colons.extend(True, False)
-            curHumid = "40{0}AB".format(h)
+            curHumid = "4{0}{1}AB".format(uartCommandEnum.time, h)
             print("display indoor humidity = {0}".format(curHumid))
             self._sendDisplayUART(curHumid)
             conf.write("displayIndoorTemp",0)
         else:
             self._colons.extend(False, True)
             h = conf.read("humidoutdoor")
-            curHumid = "40{0:02}AB".format(h)
+            curHumid = "4{0}{1:02}AB".format(uartCommandEnum.time, h)
             print("display outdoor humidity = {0}".format(curHumid))
             self._sendDisplayUART(curHumid)
             conf.write("displayIndoorTemp",1)

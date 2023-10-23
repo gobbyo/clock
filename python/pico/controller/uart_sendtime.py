@@ -10,6 +10,7 @@ def main():
     clock = kineticClock.kineticClock(conf)
 
     try:
+        clock.admin()
         if clock.connectWifi():
             clock.syncClock()
         

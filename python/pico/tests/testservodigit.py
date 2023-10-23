@@ -1,7 +1,6 @@
 from servodisplay import servoDigitDisplay
 import config
 import time
-import machine
 
 def updateDigit(digit,conf):
     prev = conf.read("previous")
@@ -33,12 +32,15 @@ def main():
         digit._extendAngles[i] = extend[i]
         digit._retractAngles[i] = retract[i]
     try:
-        while True:
+        #while True:
+        for i in range(0,15):
             updateDigit(digit,conf)
 
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:
+        conf.write("previous",14)
+        conf.write("current",0)
         digit.__del__()
         print('Done')
 

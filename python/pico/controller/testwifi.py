@@ -56,6 +56,7 @@ class hotspot:
 
     def _parseRequest(self,request):
         print("_parseRequest()")
+        evalResponse = True
         conf = config.Config("")
         #titles=['ssid','pwd','temp','humid','restart']
         lines = request.split(';')
@@ -80,6 +81,7 @@ class hotspot:
                 print('sleep={0:04}'.format(s[0]+s[1]))
                 conf.write('sleep',"{0:04}".format(s[0]+s[1]))
         self._writeSecrets(self.ssid,self.pwd)
+        return evalResponse
     
     def connectWifi(self):
         wifi = network.WLAN(network.STA_IF)
@@ -115,7 +117,7 @@ class hotspot:
 
         # open soft wifi api mode
         wifi = network.WLAN(network.AP_IF)
-        wifi.config(ssid='clock',password='12oclock',channel=self.channel,pm = 0xa11140)
+        wifi.config(ssid=self.hotspotssid,password=self.hotspotpassword,channel=self.channel,pm = 0xa11140)
         wifi.ifconfig([self.url, '255.255.255.0', self.url, '0.0.0.0'])
         wifi.active(True)
         i = self.waittime
@@ -140,7 +142,7 @@ class hotspot:
             returnPage = self._requestPage(request)
             if returnPage == 'admin':
                 print("admin response detected!")
-                self._parseRequest(request)
+                evalResponse = self._parseRequest(request)
                 response = self._web_page(self.completedsettings)
                 response_headers = {
                     'Content-Type': 'text/html; encoding=utf8',

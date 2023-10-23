@@ -4,43 +4,10 @@ from servodisplay import servoDigitDisplay
 import time
 import config
 from digitconfigenum import uartCommandEnum
+from uarttools import decodeHex, validate
 #import logs
 
 waitTime = .25 #second
-
-def decodeHex(value):
-    returnVal = value
-    if value == "A":
-        returnVal = 10
-    elif value == "B":
-        returnVal = 11
-    elif value == "C":
-        returnVal = 12
-    elif value == "D":
-        returnVal = 13
-    elif value == "E":
-        returnVal = 14
-    elif value == "F":
-        returnVal = 15
-    return returnVal
-
-def validate(value):
-    print("validate(len({0}))".format(len(value)))
-    if len(value) != 6:
-        return False
-    for d in value:
-        #print("validate({0})".format(decodeHex(d)))
-        try:
-            i = int(decodeHex(d))
-            if (i < 0) or (i > 15):
-                print("validate: invalid value {0}".format(i))
-                return False
-        except:
-            print("validate: invalid value {0}".format(value))
-            return False
-        finally:
-            pass
-    return True
 
 def updateDigit(digit,conf,displayMotion):
     prev = conf.read("previous")
@@ -138,7 +105,7 @@ def main():
                         if (command == uartCommandEnum.timedhybernation):
                             print("timed hybernation")
                             n = int(d[2:6]) * 60
-                            conf.write("timed hybernation for {0} minute(s)", n)
+                            conf.write("timedhybernation", n)
                             machine.deepsleep(n * 1000)
                         if (command == decodeHex(uartCommandEnum.reset)):
                             print("reset")
