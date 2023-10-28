@@ -282,7 +282,7 @@ class kineticClock():
         if tempCF == "F":
             curTemp = "4{0}{1:02}AD".format(uartCommandEnum.time, int(t))
         else:
-            curTemp = "4{0}{0:02}AC".format(uartCommandEnum.time, int(t))
+            curTemp = "4{0}{1:02}AC".format(uartCommandEnum.time, int(t))
         
         print("display temp = {0}".format(curTemp))
         self._sendDisplayUART(curTemp)

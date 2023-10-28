@@ -34,21 +34,34 @@ class hotspot:
             f.flush()
             f.close()
 
-    def _web_page(self, htmlpage):
+    def _web_page(self,htmlpage):
+        conf = config.Config("config.json")
+        tempCF = conf.read("tempCF")
+        findCF = '<option value="{0}">'.format(conf.read("tempCF"))
         page = ""
         with uio.open(htmlpage, 'r') as f:
             while True:
                 line = f.readline()
                 if not line:
                     break
+                if line.find('ssid') > 0:
+                    line = line.replace('8eb5c1217eaf',secrets.usr)
+                if line.find('pwd') > 0:
+                    line = line.replace('fd3b61afb36d', secrets.pwd)
+                if line.find('21:40') > 0:
+                    s = conf.read("sleep")
+                    line = line.replace('21:40','{0}:{1}'.format(s[0:2],s[2:4]))
+                if line.find('480') > 0:
+                    line = line.replace('480', conf.read("wake"))
+                if line.find(findCF) > 0:
+                    line = line.replace(findCF, '<option value="{0}" selected>'.format(tempCF))
                 page += line
         f.close()
         return page
 
     def _requestPage(self,request):
-        print("_requestType()")
         returnPage = 'UNKNOWN'
-        print('_requestPage request = {0}'.format(request))
+        #print('_requestPage request = {0}'.format(request))
         if request.find('admin') > 0:
             returnPage = 'admin'
         
@@ -164,6 +177,7 @@ class hotspot:
                 evalResponse = False
             else:
                 response = self._web_page(self.adminwebpage)
+                #print('response = {0}'.format(response))
                 response_headers = {
                     'Content-Type': 'text/html; encoding=utf8',
                     'Content-Length': len(response)
