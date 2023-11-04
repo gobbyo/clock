@@ -6,7 +6,7 @@ from dht11 import DHT11
 import json
 import urequests
 import secrets
-from uarttools import encodeHex, decodeHex
+import uarttools
 from servocolons import servoColonsDisplay
 from digitconfigenum import uartCommandEnum
 
@@ -16,19 +16,15 @@ tempSensorPin = const(20)
 tempSwitchPin = const(0)
 disconnectedLEDpin = const(18)
 connectedLEDpin = const(19)
-uartTxPin = const(12)
-uartRxPin = const(13)
 
 class kineticClock():
     def __init__(self, conf) -> None:
         print("kineticClock.__init__()")
 
-        baudRate = [9600, 19200, 38400, 57600, 115200]
-
         self._connectedLED = machine.Pin(connectedLEDpin, machine.Pin.OUT)
         self._disconnectedLED = machine.Pin(disconnectedLEDpin, machine.Pin.OUT)
-        self._uart = machine.UART(0, baudRate[0], tx=machine.Pin(uartTxPin), rx=machine.Pin(uartRxPin))
-        self._uart.init(baudRate[0], bits=8, parity=None, stop=1)
+        self._uart = machine.UART(0, uarttools.baudRate[0], tx=machine.Pin(uarttools.uartTxPin), rx=machine.Pin(uarttools.uartRxPin))
+        self._uart.init(uarttools.baudRate[0], bits=8, parity=None, stop=1)
         self._sensor = DHT11(machine.Pin(tempSensorPin, machine.Pin.OUT, pull=machine.Pin.PULL_DOWN))
         self._display24Hour = machine.Pin(hour24TimePin, machine.Pin.IN, machine.Pin.PULL_DOWN)
         self._hybernate = machine.Pin(hybernatePin, machine.Pin.IN, machine.Pin.PULL_DOWN)
@@ -57,7 +53,7 @@ class kineticClock():
         if self._hybernate.value() == 0:
             self._connectedLED.on()
             self._disconnectedLED.on()
-            self._wifi.connectAdmin()
+            self._wifi.connectAdmin(self)
             self._connectedLED.off()
             self._disconnectedLED.off()
 
@@ -73,14 +69,14 @@ class kineticClock():
                 time.sleep(0.75)
                 self._disconnectedLED.off()
                 time.sleep(0.25)
-            seconds = int(decodeHex(conf.read("hybernate")))
+            seconds = int(uarttools.decodeHex(conf.read("hybernate")))
             print("Deep sleep for {0} seconds".format(seconds))
             b = bytearray('4{0}EEEE'.format(uartCommandEnum.time), 'utf-8')
             self._uart.write(b)
             time.sleep(1)
             msg = '46'
             for i in range(0,4):
-                msg = msg + encodeHex(seconds)
+                msg = msg + uarttools.encodeHex(seconds)
             b = bytearray(msg, 'utf-8')
             self._sendDisplayUART(b)
             while self._hybernate.value() == 0:
@@ -88,6 +84,88 @@ class kineticClock():
                 self._sendDisplayUART(b)
                 for i in range(0,seconds+2):
                     time.sleep(1)
+    
+    def getExtendAngles(self, digitNumber):
+        print("kineticClock.getExtendAngles({0})".format(digitNumber))
+        b = bytearray('{0}{1}EEEE'.format(digitNumber,uartCommandEnum.txextend), 'utf-8')
+        self._uart.write(b)
+        print("write uart={0}".format(b))
+        angles = []
+        i = 0
+        k = 0
+        while i < 7:
+            if k > 50:
+                break
+            k += 1
+            time.sleep(.1)
+            if self._uart.any() > 0:
+                b = bytearray('000000', 'utf-8')
+                self._uart.readinto(b)
+                d = str(b.decode('utf-8'))
+                print("validate({0}) = {1}".format(d,uarttools.validate(d)))
+                if uarttools.validate(d):
+                    print("Command = {0}".format(uarttools.decodeHex(d[1])))
+                    command = int(uarttools.decodeHex(d[1]))
+                    #if(uartCommandEnum.txextend == command) and (digitNumber == int(uarttools.decodeHex(d[0]))):
+                    angles.append(d[2:6])
+                    i += 1
+        angles.sort()
+
+        for i in range(0,len(angles)):
+            if len(angles[i]) == 4:
+                angles[i] = int(angles[i][1:4])
+            else:
+                angles[i] = int(angles[i])
+            print("angles = {0}".format(angles[i]))
+
+        return angles
+
+    def getRetractAngles(self, digitNumber):
+        print("kineticClock.getRetractAngles({0})".format(digitNumber))
+        b = bytearray('{0}{1}EEEE'.format(digitNumber,uartCommandEnum.txretract), 'utf-8')
+        self._uart.write(b)
+        print("write uart={0}".format(b))
+        angles = []
+        i = 0
+        k = 0
+        while i < 7:
+            if k > 50:
+                break
+            k += 1
+            time.sleep(.1)
+            if self._uart.any() > 0:
+                b = bytearray('000000', 'utf-8')
+                self._uart.readinto(b)
+                d = str(b.decode('utf-8'))
+                print("validate({0}) = {1}".format(d,uarttools.validate(d)))
+                if uarttools.validate(d):
+                    print("Command = {0}".format(uarttools.decodeHex(d[1])))
+                    command = int(uarttools.decodeHex(d[1]))
+                    #if(uartCommandEnum.txretract == command) and (digitNumber == int(uarttools.decodeHex(d[0]))):
+                    angles.append(d[2:6])
+                    i += 1
+        angles.sort()
+
+        for i in range(0,len(angles)):
+            if len(angles[i]) == 4:
+                angles[i] = int(angles[i][1:4])
+            else:
+                angles[i] = int(angles[i])
+            print("angles = {0}".format(angles[i]))
+
+        return angles
+
+    def setAngles(self, digitNumber, extendAngles, retractAngles):
+        for i in range(0,len(extendAngles)):
+            print("set extend angle = {0}".format(extendAngles[i]))
+            b = bytearray('{0}{1}{2}{3:03}'.format(digitNumber,uartCommandEnum.rxextend,i,extendAngles[i]), 'utf-8')
+            self._uart.write(b)
+            time.sleep(.4)
+        for i in range(0,len(retractAngles)):
+            print("set retract angle = {0}".format(retractAngles[i]))
+            b = bytearray('{0}{1}{2}{3:03}'.format(digitNumber,uartCommandEnum.rxretract,i,retractAngles[i]), 'utf-8')
+            self._uart.write(b)
+            time.sleep(.4)
     
     def hybernateTime(self, conf):
         sleep = conf.read("sleep")

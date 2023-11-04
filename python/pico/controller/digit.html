@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>Digit 0 Settings</h1>
+        <!--<image src="digit.png" width="75" height="125">-->
+        <form onsubmit="buildurl()">
+            <table>
+                <tr>
+                    <th>segment</th>
+                    <th>extend<br>angle</th>
+                    <th>retract<br>angle</th>
+                </tr>
+                <tr>
+                    <td align="center"><b>A</b></td>
+                    <td><input type="number" id="aExtend" value="10" min="0" max="30"></td>
+                    <td><input type="number" id="aRetract" value="100" min="80" max="120"></td>
+                </tr>
+                <tr>
+                    <td align="center"><b>B</b></td>
+                    <td><input type="number" id="bExtend" value="10" min="0" max="30"></td>
+                    <td><input type="number" id="bRetract" value="100" min="80" max="120"></td>
+                </tr>
+                <tr>
+                    <td align="center"><b>C</b></td>
+                    <td><input type="number" id="cExtend" value="10" min="0" max="30"></td>
+                    <td><input type="number" id="cRetract" value="100" min="80" max="120"></td>
+                </tr>
+                <tr>
+                    <td align="center"><b>D</b></td>
+                    <td><input type="number" id="dExtend" value="10" min="0" max="30"></td>
+                    <td><input type="number" id="dRetract" value="100" min="80" max="120"></td>
+                </tr>
+                <tr>
+                    <td align="center"><b>E</b></td>
+                    <td><input type="number" id="eExtend" value="10" min="0" max="30"></td>
+                    <td><input type="number" id="eRetract" value="100" min="80" max="120"></td>
+                </tr>
+                <tr>
+                    <td align="center"><b>F</b></td>
+                    <td><input type="number" id="fExtend" value="10" min="0" max="30"></td>
+                    <td><input type="number" id="fRetract" value="100" min="80" max="120"></td>
+                </tr>
+                <tr>
+                    <td align="center"><b>G</b></td>
+                    <td><input type="number" id="gExtend" value="10" min="0" max="30"></td>
+                    <td><input type="number" id="gRetract" value="100" min="80" max="120"></td>
+                </tr>
+            </table>       
+            <p><input type="submit" value="update"></p>
+        </form>
+        <script>
+            function buildurl() {
+                var aExtend = document.getElementById("aExtend").value;
+                var aRetract = document.getElementById("aRetract").value;
+                var bExtend = document.getElementById("bExtend").value;
+                var bRetract = document.getElementById("bRetract").value;
+                var cExtend = document.getElementById("cExtend").value;
+                var cRetract = document.getElementById("cRetract").value;
+                var dExtend = document.getElementById("dExtend").value;
+                var dRetract = document.getElementById("dRetract").value;
+                var eExtend = document.getElementById("eExtend").value;
+                var eRetract = document.getElementById("eRetract").value;
+                var fExtend = document.getElementById("fExtend").value;
+                var fRetract = document.getElementById("fRetract").value;
+                var gExtend = document.getElementById("gExtend").value;
+                var gRetract = document.getElementById("gRetract").value;
+
+                var query = "anglesettings"
+                query += ";aExtend=" + aExtend
+                query += ";aRetract=" + aRetract
+                query += ";bExtend=" + bExtend
+                query += ";bRetract=" + bRetract
+                query += ";cExtend=" + cExtend
+                query += ";cRetract=" + cRetract
+                query += ";dExtend=" + dExtend
+                query += ";dRetract=" + dRetract
+                query += ";eExtend=" + eExtend
+                query += ";eRetract=" + eRetract
+                query += ";fExtend=" + fExtend
+                query += ";fRetract=" + fRetract
+                query += ";gExtend=" + gExtend
+                query += ";gRetract=" + gRetract
+            
+                document.forms[0].action = query;
+            }
+        </script>
+    </body>
+</html>

@@ -42,8 +42,10 @@ def rxretract(digit,command,conf,digitNumber):
     retract = conf.read("retract")
     i = int(command[2])
     value = int(command[3:len(command)])
-    print("retract old[{1}] = {0}, retract new[{1}] = {2}".format(retract, i, value))
+    print("retract = {0}, retract[{1}] = {2}".format(retract, i, value))
     retract[i] = value
+    digit._retractAngles[i] = retract
+    print("writing to config, retract = {0}".format(retract))
     conf.write("retract",retract)
     digit.retract(i)
 

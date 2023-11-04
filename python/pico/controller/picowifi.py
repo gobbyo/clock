@@ -7,6 +7,7 @@ import time
 import config
 import machine
 import secrets
+import kineticClock
 
 #purpose of this class is to bootstrap the PICO W connectivity by and setting the wifi ssid and password
 #this class will also allow the user to set the temperature and humidity to be displayed on the pico
@@ -17,10 +18,14 @@ class hotspot:
         self.hotspotpassword = password      #Set your access point password
         self.adminwebpage = 'admin.html'
         self.completedsettings = 'completedsettings.html'
+        self.digitpage = 'digit.html'
         self.channel = 11
         self.waittime = 10
         self.ssid = "ssid"
         self.pwd = "pwd"
+        self.currentDigit = -1
+        self.extendAngles = []
+        self.retractAngles = []
 
     def __del__(self):
         print("__del__()")
@@ -34,12 +39,12 @@ class hotspot:
             f.flush()
             f.close()
 
-    def _web_page(self,htmlpage):
+    def _admin_page(self):
+        page = ''
         conf = config.Config("config.json")
         tempCF = conf.read("tempCF")
         findCF = '<option value="{0}">'.format(conf.read("tempCF"))
-        page = ""
-        with uio.open(htmlpage, 'r') as f:
+        with uio.open(self.adminwebpage, 'r') as f:
             while True:
                 line = f.readline()
                 if not line:
@@ -56,19 +61,130 @@ class hotspot:
                 if line.find(findCF) > 0:
                     line = line.replace(findCF, '<option value="{0}" selected>'.format(tempCF))
                 page += line
-        f.close()
+            f.close()
         return page
 
+    def _digit_page(self, clock):
+        page = 'Error reading extend and retract angles for digit {0}'.format(self.currentDigit)
+        
+        self.extendAngles = clock.getExtendAngles(self.currentDigit)
+        print('extendAngles = {0}  len(extendAngles) = {1}'.format(self.extendAngles,len(self.extendAngles)))
+        self.retractAngles = clock.getRetractAngles(self.currentDigit)
+        print('retractAngles = {0}  len(retractAngles) = {1}'.format(self.retractAngles,len(self.retractAngles)))
+        if len(self.extendAngles) == 7 and len(self.retractAngles) == 7:
+            with uio.open(self.digitpage, 'r') as f:
+                page = ''
+                while True:
+                    line = f.readline()
+                    if not line:
+                        break
+                    if line.find('<h1>Digit 0 Settings</h1>') > 0:
+                        line = '<h1>Digit {0} Settings</h1>'.format(self.currentDigit)
+                    if line.find('<td><input type="number" id="aExtend" value="10" min="0" max="30"></td>') > 0:
+                        line = '<td><input type="number" id="aExtend" value="{0}" min="0" max="30"></td>'.format(self.extendAngles[0])
+                    if line.find('<td><input type="number" id="bExtend" value="10" min="0" max="30"></td>') > 0:
+                        line = '<td><input type="number" id="bExtend" value="{0}" min="0" max="30"></td>'.format(self.extendAngles[1])
+                    if line.find('<td><input type="number" id="cExtend" value="10" min="0" max="30"></td>') > 0:
+                        line = '<td><input type="number" id="cExtend" value="{0}" min="0" max="30"></td>'.format(self.extendAngles[2])
+                    if line.find('<td><input type="number" id="dExtend" value="10" min="0" max="30"></td>') > 0:
+                        line = '<td><input type="number" id="dExtend" value="{0}" min="0" max="30"></td>'.format(self.extendAngles[3])
+                    if line.find('<td><input type="number" id="eExtend" value="10" min="0" max="30"></td>') > 0:
+                        line = '<td><input type="number" id="eExtend" value="{0}" min="0" max="30"></td>'.format(self.extendAngles[4])
+                    if line.find('<td><input type="number" id="fExtend" value="10" min="0" max="30"></td>') > 0:
+                        line = '<td><input type="number" id="fExtend" value="{0}" min="0" max="30"></td>'.format(self.extendAngles[5])
+                    if line.find('<td><input type="number" id="gExtend" value="10" min="0" max="30"></td>') > 0:
+                        line = '<td><input type="number" id="gExtend" value="{0}" min="0" max="30"></td>'.format(self.extendAngles[6])
+            
+                    if line.find('<td><input type="number" id="aRetract" value="100" min="80" max="120"></td>') > 0:
+                        line = '<td><input type="number" id="aRetract" value="{0}" min="80" max="120"></td>'.format(self.retractAngles[0])
+                    if line.find('<td><input type="number" id="bRetract" value="100" min="80" max="120"></td>') > 0:
+                        line = '<td><input type="number" id="bRetract" value="{0}" min="80" max="120"></td>'.format(self.retractAngles[1])
+                    if line.find('<td><input type="number" id="cRetract" value="100" min="80" max="120"></td>') > 0:
+                        line = '<td><input type="number" id="cRetract" value="{0}" min="80" max="120"></td>'.format(self.retractAngles[2])
+                    if line.find('<td><input type="number" id="dRetract" value="100" min="80" max="120"></td>') > 0:
+                        line = '<td><input type="number" id="dRetract" value="{0}" min="80" max="120"></td>'.format(self.retractAngles[3])
+                    if line.find('<td><input type="number" id="eRetract" value="100" min="80" max="120"></td>') > 0:
+                        line = '<td><input type="number" id="eRetract" value="{0}" min="80" max="120"></td>'.format(self.retractAngles[4])
+                    if line.find('<td><input type="number" id="fRetract" value="100" min="80" max="120"></td>') > 0:
+                        line = '<td><input type="number" id="fRetract" value="{0}" min="80" max="120"></td>'.format(self.retractAngles[5])
+                    if line.find('<td><input type="number" id="gRetract" value="100" min="80" max="120"></td>') > 0:
+                        line = '<td><input type="number" id="gRetract" value="{0}" min="80" max="120"></td>'.format(self.retractAngles[6])
+                    
+                    if line.find('var query = "digit0"') > 0:
+                        line = 'var query = "digit{0}"'.format(self.currentDigit)
+                    page += line
+                f.close()
+        return page
+    
+    def parseAngleSettings(self, request):
+        print("parseAngleSettings()")
+        lines = request.split(';')
+        for i in lines:
+            t = i.split('=')
+            if len(t) > 1:
+                if t[1].find('?'):
+                    t[1] = t[1].split('?')[0]
+            if t[0] == 'aExtend':
+                self.extendAngles[0] = int(t[1])
+            if t[0] == 'bExtend':
+                self.extendAngles[1] = int(t[1])
+            if t[0] == 'cExtend':
+                self.extendAngles[2] = int(t[1])
+            if t[0] == 'dExtend':
+                self.extendAngles[3] = int(t[1])
+            if t[0] == 'eExtend':
+                self.extendAngles[4] = int(t[1])
+            if t[0] == 'fExtend':
+                self.extendAngles[5] = int(t[1])
+            if t[0] == 'gExtend':
+                self.extendAngles[6] = int(t[1])
+            if t[0] == 'aRetract':
+                self.retractAngles[0] = int(t[1])
+            if t[0] == 'bRetract':
+                self.retractAngles[1] = int(t[1])
+            if t[0] == 'cRetract':
+                self.retractAngles[2] = int(t[1])
+            if t[0] == 'dRetract':
+                self.retractAngles[3] = int(t[1])
+            if t[0] == 'eRetract':
+                self.retractAngles[4] = int(t[1])
+            if t[0] == 'fRetract':
+                self.retractAngles[5] = int(t[1])
+            if t[0] == 'gRetract':
+                self.retractAngles[6] = int(t[1])
+
+    def _completed_page(self):
+        page = ''
+        with uio.open(self.completedsettings, 'r') as f:
+            while True:
+                line = f.readline()
+                if not line:
+                    break
+                page += line
+            f.close()
+        return page
+    
     def _requestPage(self,request):
-        returnPage = 'UNKNOWN'
-        #print('_requestPage request = {0}'.format(request))
-        if request.find('admin') > 0:
-            returnPage = 'admin'
+        returnPage = 'admin'
+        i = request.find('\n')
+        if i < 0:
+            i = request.find('\r')
+        if i >= 0:
+            req = request[0:i]
+            print('_requestPage() {0}'.format(req))
+            if req.find('admin') > 0:
+                returnPage = 'admin'
+            if req.find('digit') > 0:
+                returnPage = 'digit'
+            if req.find('anglesettings') > 0:
+                returnPage = 'anglesettings'
+            if req.find('wifisettings') > 0:
+                returnPage = 'wifisettings'
         
         return returnPage
 
-    def _parseRequest(self,request):
-        print("_parseRequest()")
+    def parseAdminSettings(self,request):
+        print("parseAdminSettings()")
         conf = config.Config("")
         #titles=['ssid','pwd','temp','humid','restart']
         lines = request.split(';')
@@ -94,6 +210,26 @@ class hotspot:
                 conf.write('sleep',"{0:04}".format(s[0]+s[1]))
         self._writeSecrets(self.ssid,self.pwd)
     
+    def sendreply(self,conn, pagebuffer):
+        print("sendreply(conn={0})".format(conn))
+        response_headers = {
+            'Content-Type': 'text/html; encoding=utf8',
+            'Content-Length': len(pagebuffer)
+        }
+        response_headers_raw = ''.join('%s: %s\n' % (k, v) for k, v in \
+                                                response_headers.items())
+
+        # Reply as HTTP/1.1 server, saying "HTTP OK" (code 200).
+        response_proto = 'HTTP/1.1'.encode()
+        response_status = '200'.encode()
+        response_status_text = 'OK'.encode() # this can be random
+
+        conn.send(b'%s %s %s' % (response_proto, response_status,
+                                                        response_status_text))
+        conn.send(response_headers_raw.encode())
+        conn.send(b'\n') # to separate headers from body
+        conn.send(pagebuffer.encode())
+
     def connectWifi(self):
         wifi = network.WLAN(network.STA_IF)
         wifi.active(True)
@@ -121,7 +257,7 @@ class hotspot:
         machine.reset()
         return False
 
-    def connectAdmin(self):
+    def connectAdmin(self, clock):
         print('Clock Hotspot is starting')
         evalResponse = True
         gc.collect()
@@ -151,50 +287,30 @@ class hotspot:
             request = conn.recv(1024).decode('utf-8')
             print('connection request received = %s' % str(request))
             returnPage = self._requestPage(request)
-            if returnPage == 'admin':
-                print("admin response detected!")
-                self._parseRequest(request)
-                response = self._web_page(self.completedsettings)
-                response_headers = {
-                    'Content-Type': 'text/html; encoding=utf8',
-                    'Content-Length': len(response)
-                }
-                response_headers_raw = ''.join('%s: %s\n' % (k, v) for k, v in \
-                                                        response_headers.items())
-
-                # Reply as HTTP/1.1 server, saying "HTTP OK" (code 200).
-                response_proto = 'HTTP/1.1'.encode()
-                response_status = '200'.encode()
-                response_status_text = 'OK'.encode() # this can be random
-
-                conn.send(b'%s %s %s' % (response_proto, response_status,
-                                                                response_status_text))
-                conn.send(response_headers_raw.encode())
-                conn.send(b'\n') # to separate headers from body
-                conn.send(response.encode())
-                time.sleep(3)
+            if returnPage == 'wifisettings':
+                print("update to wifisettings detected!")
+                self.parseAdminSettings(request)
+                pagebuffer = self._completed_page()
+                self.sendreply(conn,pagebuffer)
+                time.sleep(1)
                 conn.close()
                 evalResponse = False
-            else:
-                response = self._web_page(self.adminwebpage)
-                #print('response = {0}'.format(response))
-                response_headers = {
-                    'Content-Type': 'text/html; encoding=utf8',
-                    'Content-Length': len(response)
-                }
-                response_headers_raw = ''.join('%s: %s\n' % (k, v) for k, v in \
-                                                        response_headers.items())
-
-                # Reply as HTTP/1.1 server, saying "HTTP OK" (code 200).
-                response_proto = 'HTTP/1.1'.encode()
-                response_status = '200'.encode()
-                response_status_text = 'OK'.encode() # this can be random
-
-                conn.send(b'%s %s %s' % (response_proto, response_status,
-                                                                response_status_text))
-                conn.send(response_headers_raw.encode())
-                conn.send(b'\n') # to separate headers from body
-                conn.send(response.encode())
+            if returnPage == 'anglesettings':
+                print("update to anglesettings detected! request={0}".format(request))
+                self.parseAngleSettings(request)
+                clock.setAngles(self.currentDigit, self.extendAngles, self.retractAngles)
+                pagebuffer = self._admin_page()
+                self.sendreply(conn,pagebuffer)
+            if returnPage == 'digit':
+                i = request.find('digit') + len('digit')
+                print("digit page detected! Digit={0}".format(request[i]))
+                if request[i].isdigit():
+                    self.currentDigit = request[i]
+                    pagebuffer = self._digit_page(clock)
+                    self.sendreply(conn,pagebuffer)
+            if returnPage == 'admin':
+                pagebuffer = self._admin_page()
+                self.sendreply(conn,pagebuffer)
 
         wifi.disconnect()
         wifi.active(False)

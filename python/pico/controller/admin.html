@@ -1,28 +1,48 @@
 <!DOCTYPE html>
 <html>
     <body>
-        <h1>Analog Clock Controls Settings</h1>
-        <form onsubmit="buildurl()">
-            <p>name: <input type="text" id="ssid" value="8eb5c1217eaf"></p>
-            <p>password: <input type="password" id="pwd" value="fd3b61afb36d"></p>
-            <p>sleep:   <input type="time" id="sleep" value="21:40" min="00:00" max="23:59"></p>
-            <p>minutes of sleep:    <input type="number" id="wake" value="480"></p>
-            <p>temperature: <select name="tempCF" id="tempCF">
-                <option value="F">fahrenheit</option>
-                <option value="C">celsius</option>
-            </select></p>
-            
+        <h1>Kinetic Clock Controls Settings</h1>
+        <form onsubmit="adminurl()">
+            <table>
+                <tr>
+                    <td><b>WIFI SSID</b></td>
+                    <td><input type="text" id="ssid" value="8eb5c1217eaf" maxlength="24" size="24"></td>
+                </tr>
+                <tr>
+                    <td><b>WIFI Pwd</b></td>
+                    <td><input type="password" id="pwd" value="fd3b61afb36d" maxlength="24" size="24"></td>
+                </tr>
+                <tr>
+                    <td>Daily Sleep</td>
+                    <td><input type="time" id="sleep" value="21:40" min="00:00" max="23:59"></td>
+                </tr>
+                <tr>
+                    <td>Sleep Duration</td>
+                    <td><input type="number" id="wake" value="480" min="1" max="1080"> minutes</td>
+                </tr>
+                <tr>
+                    <td>Temperature</td>
+                    <td><select name="tempCF" id="tempCF">
+                        <option value="F">fahrenheit</option>
+                        <option value="C">celsius</option>
+                    </select></td>
+                </tr>
+                <tr>
+                    <td>Display</td>
+                    <td><a href="digit0.html">Digit 0</a><br><a href="digit1.html">Digit 1</a><br><a href="digit2.html">Digit  2</a><br><a href="digit3.html">Digit 3</a></td>
+                </tr>
+            </table>
             <p><input type="submit"></p>
         </form>
         <script>
-            function buildurl() {
+            function adminurl() {
                 var ssid = document.getElementById("ssid").value;
                 var pwd = document.getElementById("pwd").value;
                 var tempCF = document.getElementById("tempCF").value;
                 var sleep = document.getElementById("sleep").value;
                 var wake = document.getElementById("wake").value;
 
-                var query = "admin"
+                var query = "wifisettings"
                 query += ";ssid=" + ssid 
                 query += ";pwd=" + pwd 
                 query += ";tempCF=" + tempCF
