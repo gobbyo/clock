@@ -1,7 +1,5 @@
 uartTxPin = const(12)
 uartRxPin = const(13)
-uartDigitRxPin = const(1)
-uartDigitTxPin = const(0)
 baudRate = [9600, 19200, 38400, 57600, 115200]
 
 def decodeHex(value):

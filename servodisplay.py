@@ -45,7 +45,7 @@ class servoDigitDisplay:
             self._leds[i].off()
 
     def __del__(self):
-        self.paintNumber(0x0E)
+        self.paintFastNumber(0x0E)
         for led in self._leds:
             led.off()
         print("servoDigitDisplay destructor")
@@ -82,7 +82,7 @@ class servoDigitDisplay:
             if self._previousNumber[i] == 1:
                 self._leds[i].on()
 
-    def paintNumber(self,val):
+    def paintFastNumber(self,val):
         input = []
         input = self.getArray(self._segnum[val])
         print("paintNumber._previousNumber {0}".format(self._previousNumber))

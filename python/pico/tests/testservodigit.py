@@ -8,12 +8,7 @@ def updateDigit(digit,conf):
 
     i = conf.read("current")
     print("Current Number {0}".format(i))
-    motion = conf.read("motion")
-    print("Motion {0}".format(motion))
-    if motion == 0:
-        digit.paintFastNumber(i)
-    else:
-        digit.paintSlowNumber(i)
+    digit.paintNumber(i)
     print("Previous Number {0}".format(i))
     conf.write("previous",i)
 

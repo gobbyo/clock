@@ -250,7 +250,7 @@ class kineticClock():
             self._connectedLED.off()
             
     def formatHour(self, hour):
-        if self._display24Hour.value() == 0:
+        if self._display24Hour.value() == 1:
             print("display 12 hour time")
             if hour > 12:
                 hour -= 12

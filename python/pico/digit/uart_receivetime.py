@@ -12,16 +12,10 @@ waitTime = .25 #second
 def updateDigit(digit,conf,displayMotion):
     prev = conf.read("previous")
     digit.setpreviousNumber(prev)
-
     i = conf.read("current")
-    if displayMotion == 0:
-        digit.paintFastNumber(i)
-    else:
-        digit.paintSlowNumber(i)
-
+    digit.paintNumber(i)
     print("Number {0}".format(i))
     conf.write("previous",i)
-
     i += 1
     if i >= len(digit._segnum):
         i = 0
@@ -79,14 +73,14 @@ def main():
     digitNumber = conf.read("digit")
 
     digit = servoDigitDisplay()
-    digit.paintFastNumber(0x0E)
+    digit.paintNumber(0x0E)
 
     for i in range(0,7):
         digit._extendAngles[i] = extend[i]
         digit._retractAngles[i] = retract[i]
     
     try:
-        uart = UART(0, uarttools.baudRate[0], rx=Pin(uarttools.uartRxPin), tx=Pin(uarttools.uartTxPin), timeout=10)
+        uart = UART(0, uarttools.baudRate[0], rx=Pin(uarttools.uartDigitRxPin), tx=Pin(uarttools.uartDigitTxPin), timeout=10)
         uart.init(baudRate[0], bits=8, parity=None, stop=1)
 
         prev = -1
@@ -140,7 +134,7 @@ def main():
                             machine.deepsleep(n * 1000)
                         if (command == uarttools.decodeHex(uartCommandEnum.reset)):
                             print("reset")
-                            digit.paintFastNumber(0x0E)
+                            digit.paintNumber(0x0E)
                             conf.write("current",0)
                             conf.write("previous",14)
                             machine.reset()
