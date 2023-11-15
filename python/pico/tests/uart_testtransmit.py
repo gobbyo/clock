@@ -11,7 +11,7 @@ def main():
         baudrate = [9600, 19200, 38400, 57600, 115200]
 
         try:
-            uart = UART(0, baudrate[0], tx=Pin(12), rx=Pin(13))
+            uart = UART(0, baudrate[0], tx=Pin(0), rx=Pin(1))
             uart.init(baudrate[0], bits=8, parity=None, stop=1)
             print("UART is configured as : ", uart)
             b = bytearray('000000', 'utf-8')

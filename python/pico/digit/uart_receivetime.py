@@ -80,8 +80,8 @@ def main():
         digit._retractAngles[i] = retract[i]
     
     try:
-        uart = UART(0, uarttools.baudRate[0], rx=Pin(uarttools.uartDigitRxPin), tx=Pin(uarttools.uartDigitTxPin), timeout=10)
-        uart.init(baudRate[0], bits=8, parity=None, stop=1)
+        uart = machine.UART(0, uarttools.baudRate[0], rx=Pin(uarttools.uartDigitRxPin), tx=Pin(uarttools.uartDigitTxPin), timeout=10)
+        uart.init(uarttools.baudRate[0], bits=8, parity=None, stop=1)
 
         prev = -1
 
