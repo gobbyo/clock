@@ -6,11 +6,11 @@ def main():
     try:
         servo.move(10)
         time.sleep(1)
-        servo.move(110)
+        servo.move(100)
         time.sleep(1)
         servo.move(0)
         time.sleep(1)
-        servo.move(110)
+        servo.move(100)
     except KeyboardInterrupt:
         print('KeyboardInterrupt')
     finally:
