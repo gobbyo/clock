@@ -94,7 +94,7 @@ class kineticClock():
         i = 0
         k = 0
         while i < 7:
-            if k > 50:
+            if k > 100:
                 break
             k += 1
             time.sleep(.1)
@@ -129,7 +129,7 @@ class kineticClock():
         i = 0
         k = 0
         while i < 7:
-            if k > 50:
+            if k > 100:
                 break
             k += 1
             time.sleep(.1)
