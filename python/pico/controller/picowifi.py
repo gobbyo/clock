@@ -7,7 +7,7 @@ import time
 import config
 import machine
 import secrets
-import kineticClock
+import kineticDisplay
 
 #purpose of this class is to bootstrap the PICO W connectivity by and setting the wifi ssid and password
 #this class will also allow the user to set the temperature and humidity to be displayed on the pico

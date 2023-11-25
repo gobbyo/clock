@@ -1,10 +1,10 @@
 import config
-import kineticClock
+import kineticDisplay
 
 #picos must have common ground for uart to work
 def main():
     conf = config.Config("conf.json")
-    clock = kineticClock.kineticClock(conf)
+    clock = kineticDisplay.kineticDisplay(conf)
     
     try:
         extend = clock.getExtendAngles(1)
