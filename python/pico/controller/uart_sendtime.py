@@ -1,4 +1,4 @@
-# This file should be saved as main.py and uploaded onto the Pico W
+# This file is saved as main.py and uploaded onto the Pico W display controller
 # This is the main entry point to the controller for the Kinetic Display
 
 import kineticDisplay

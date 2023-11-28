@@ -29,6 +29,7 @@ def encodeHex(value):
     return str(hex(value)).upper()[2:]
 
 def validate(value):
+    retval = True
     print("validate(len({0}))".format(len(value)))
     if len(value) != 6:
         return False
@@ -41,7 +42,7 @@ def validate(value):
                 return False
         except:
             print("validate: invalid value {0}".format(value))
-            return False
+            retval = False
         finally:
             pass
-    return True
+    return retval

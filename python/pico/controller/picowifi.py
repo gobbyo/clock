@@ -64,12 +64,12 @@ class hotspot:
             f.close()
         return page
 
-    def _digit_page(self, clock):
+    def _digit_page(self, display):
         page = 'Error reading extend and retract angles for digit {0}'.format(self.currentDigit)
         
-        self.extendAngles = clock.getExtendAngles(self.currentDigit)
+        self.extendAngles = display.getExtendAngles(self.currentDigit)
         print('extendAngles = {0}  len(extendAngles) = {1}'.format(self.extendAngles,len(self.extendAngles)))
-        self.retractAngles = clock.getRetractAngles(self.currentDigit)
+        self.retractAngles = display.getRetractAngles(self.currentDigit)
         print('retractAngles = {0}  len(retractAngles) = {1}'.format(self.retractAngles,len(self.retractAngles)))
         if len(self.extendAngles) == 7 and len(self.retractAngles) == 7:
             with uio.open(self.digitpage, 'r') as f:
@@ -257,7 +257,7 @@ class hotspot:
         machine.reset()
         return False
 
-    def connectAdmin(self, clock):
+    def connectAdmin(self, display):
         print('Clock Hotspot is starting')
         evalResponse = True
         gc.collect()
@@ -298,7 +298,7 @@ class hotspot:
             if returnPage == 'anglesettings':
                 print("update to anglesettings detected! request={0}".format(request))
                 self.parseAngleSettings(request)
-                clock.setAngles(self.currentDigit, self.extendAngles, self.retractAngles)
+                display.setAngles(self.currentDigit, self.extendAngles, self.retractAngles)
                 pagebuffer = self._admin_page()
                 self.sendreply(conn,pagebuffer)
             if returnPage == 'digit':
@@ -306,7 +306,7 @@ class hotspot:
                 print("digit page detected! Digit={0}".format(request[i]))
                 if request[i].isdigit():
                     self.currentDigit = request[i]
-                    pagebuffer = self._digit_page(clock)
+                    pagebuffer = self._digit_page(display)
                     self.sendreply(conn,pagebuffer)
             if returnPage == 'admin':
                 pagebuffer = self._admin_page()

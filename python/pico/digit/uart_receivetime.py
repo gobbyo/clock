@@ -1,3 +1,5 @@
+#This file is to be uploaded as main.py for each digit 0-3
+
 import machine
 from machine import UART, Pin
 from servodisplay import servoDigitDisplay
@@ -7,7 +9,7 @@ from digitconfigenum import uartCommandEnum
 import uarttools
 #import logs
 
-waitTime = .25 #second
+waitTime = .1 #second
 
 def updateDigit(digit,conf,displayMotion):
     prev = conf.read("previous")
@@ -21,42 +23,42 @@ def updateDigit(digit,conf,displayMotion):
         i = 0
     conf.write("current",i)
 
+#TODO: move this to the servodisplay.py class
 def rxextend(digit,command,conf,digitNumber):
     print("command to receive extend angles for digit {0} saved in config".format(digitNumber))
-    extend = conf.read("extend")
+    digit._extendAngles = conf.read("extend")
     i = int(command[2])
     value = int(command[3:len(command)])
-    print("extend = {0}, extend[{1}] = {2}".format(extend, i, value))
-    extend[i] = value
-    conf.write("extend",extend)
+    digit._extendAngles[i] = value
+    conf.write("extend",digit._extendAngles)
     digit.extend(i)
 
+#TODO: move this to the servodisplay.py class
 def rxretract(digit,command,conf,digitNumber):
     print("command to receive retract angles for digit {0} saved in config".format(digitNumber))
-    retract = conf.read("retract")
+    digit._retractAngles = conf.read("retract")
     i = int(command[2])
     value = int(command[3:len(command)])
-    print("retract old[{1}] = {0}, retract new[{1}] = {2}".format(retract, i, value))
-    retract[i] = value
-    conf.write("retract",retract)
+    digit._retractAngles[i] = value
+    conf.write("retract",digit._retractAngles)
     digit.retract(i)
 
-def txextend(conf,uart,digitNumber):
+#TODO: move this to the servodisplay.py class
+def txextend(digit,uart,digitNumber):
     print("send extend angles to controller for digit {0}".format(digitNumber))
-    extend = conf.read("extend")
     segment = 0
-    for angle in extend:
+    for angle in digit._extendAngles:
         i = int(angle)
         b = bytearray('{0}{1}{2}{3:03}'.format(digitNumber, uartCommandEnum.txextend, segment,i), 'utf-8')
         uart.write(b)
         time.sleep(.1)
         segment += 1
 
-def txretract(conf,uart,digitNumber):
+#TODO: move this to the servodisplay.py class
+def txretract(digit,uart,digitNumber):
     print("send retract angles to controller for digit {0}".format(digitNumber))
-    retract = conf.read("retract")
     segment = 0
-    for angle in retract:
+    for angle in digit._retractAngles:
         i = int(angle)
         b = bytearray('{0}{1}{2}{3:03}'.format(digitNumber, uartCommandEnum.txretract, segment,i), 'utf-8')
         uart.write(b)
@@ -64,8 +66,6 @@ def txretract(conf,uart,digitNumber):
         segment += 1
 
 def main():
-    baudRate = [9600, 19200, 38400, 57600, 115200]
-    
     conf = config.Config("digit.json")
     extend = conf.read("extend")
     retract = conf.read("retract")
@@ -80,7 +80,7 @@ def main():
         digit._retractAngles[i] = retract[i]
     
     try:
-        uart = machine.UART(0, uarttools.baudRate[0], rx=Pin(uarttools.uartDigitRxPin), tx=Pin(uarttools.uartDigitTxPin), timeout=10)
+        uart = UART(0, uarttools.baudRate[0], rx=Pin(uarttools.uartDigitRxPin), tx=Pin(uarttools.uartDigitTxPin), timeout=10)
         uart.init(uarttools.baudRate[0], bits=8, parity=None, stop=1)
 
         prev = -1
@@ -107,11 +107,11 @@ def main():
                         if (command == uartCommandEnum.rxextend): #receive extend angle
                             rxextend(digit,d,conf,digitNumber)
                         if (command == uartCommandEnum.txextend): #send all extend angles
-                            txextend(conf,uart,digitNumber)                        
+                            txextend(digit,uart,digitNumber)                        
                         if (command == uartCommandEnum.rxretract): #receive retract angle
                             rxretract(digit,d,conf,digitNumber)
                         if (command == uartCommandEnum.txretract): #send all retract angles
-                            txretract(conf,uart,digitNumber)
+                            txretract(digit,uart,digitNumber)
                         if (command == uartCommandEnum.motion):
                             print("writing to config, 'motion' = {0}".format(uarttools.decodeHex(d[5])))
                             displayMotion = int(uarttools.decodeHex(d[5]))

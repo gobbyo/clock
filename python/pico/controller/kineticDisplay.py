@@ -29,7 +29,7 @@ class kineticDisplay():
         self._display24Hour = machine.Pin(hour24TimePin, machine.Pin.IN, machine.Pin.PULL_DOWN)
         self._hybernate = machine.Pin(hybernatePin, machine.Pin.IN, machine.Pin.PULL_DOWN)
         self._switch = machine.Pin(tempSwitchPin, machine.Pin.OUT,value=0)
-        self._colons = servoColonsDisplay("config.json")
+        self._colons = servoColonsDisplay(conf)
         self._currentTime = "{0}{1:02}".format(0, 0)
         self._wifi = picowifi.hotspot(secrets.usr, secrets.pwd)
         self._sync = syncRTC.syncRTC()
@@ -116,7 +116,7 @@ class kineticDisplay():
                 angles[i] = int(angles[i][1:4])
             else:
                 angles[i] = int(angles[i])
-            print("angles = {0}".format(angles[i]))
+            #print("angles = {0}".format(angles[i]))
 
         return angles
 
@@ -160,12 +160,12 @@ class kineticDisplay():
             print("set extend angle = {0}".format(extendAngles[i]))
             b = bytearray('{0}{1}{2}{3:03}'.format(digitNumber,uartCommandEnum.rxextend,i,extendAngles[i]), 'utf-8')
             self._uart.write(b)
-            time.sleep(.4)
+            time.sleep(.1)
         for i in range(0,len(retractAngles)):
             print("set retract angle = {0}".format(retractAngles[i]))
             b = bytearray('{0}{1}{2}{3:03}'.format(digitNumber,uartCommandEnum.rxretract,i,retractAngles[i]), 'utf-8')
             self._uart.write(b)
-            time.sleep(.4)
+            time.sleep(.1)
     
     def hybernateTime(self, conf):
         sleep = conf.read("sleep")
