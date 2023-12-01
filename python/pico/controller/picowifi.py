@@ -7,10 +7,12 @@ import time
 import config
 import machine
 import secrets
-import kineticDisplay
 
-#purpose of this class is to bootstrap the PICO W connectivity by and setting the wifi ssid and password
-#this class will also allow the user to set the temperature and humidity to be displayed on the pico
+# The purpose of this class is to bootstrap the PICO W connectivity by and setting the wifi ssid and password
+# This class renders administrative web pages to allow the user to set various settings for the main display controller:
+# the wifi ssid and password, the time format, the wake and sleep times, the temperature format, and the temperature and humidity
+# This class also renders web pages to allow the user to modify the extend and retract angles for each digit.
+# Note the static ip address is necessary to allow the user to connect to the PICO W when it is in access point mode
 class hotspot:
     def __init__(self,ssid,password):
         self.url = '192.168.4.1'  #static ip address
@@ -32,6 +34,8 @@ class hotspot:
         time.sleep(1)
         #machine.reset() #reset to avoid OSError: [Errno 98] EADDRINUSE
     
+    # This method writes the wifi ssid and password to the secrets.py file
+    # This file is used by the main display controller to connect to the user's wifi network
     def _writeSecrets(self,ssid,pwd):
         print("_secrets()")
         with uio.open('secrets.py', 'w') as f:
@@ -39,6 +43,10 @@ class hotspot:
             f.flush()
             f.close()
 
+    # This method renders the admin web page to the main display controller
+    # The admin web page allows the user to set the wifi ssid and password, 
+    # the time format, the wake and sleep times, the temperature format, 
+    # and the temperature and humidity
     def _admin_page(self):
         page = ''
         conf = config.Config("config.json")
@@ -64,6 +72,9 @@ class hotspot:
             f.close()
         return page
 
+    # This method renders the digit web page for each segments extend and retract angles
+    # The extend and retract angles are stored in the digit's config file and retrieved by the
+    # main display controller via UART when the form is initialized
     def _digit_page(self, display):
         page = 'Error reading extend and retract angles for digit {0}'.format(self.currentDigit)
         
@@ -116,6 +127,8 @@ class hotspot:
                 f.close()
         return page
     
+    # This method parses the extend and retract angles for each digit from the web page when the user submits the form
+    # The extend and retract angles are stored in the config file
     def parseAngleSettings(self, request):
         print("parseAngleSettings()")
         lines = request.split(';')
@@ -153,6 +166,7 @@ class hotspot:
             if t[0] == 'gRetract':
                 self.retractAngles[6] = int(t[1])
 
+    # This method reads the stored web pages into memory
     def _completed_page(self):
         page = ''
         with uio.open(self.completedsettings, 'r') as f:
@@ -164,6 +178,7 @@ class hotspot:
             f.close()
         return page
     
+    # This method parses the request from the web page and returns the page to be rendered
     def _requestPage(self,request):
         returnPage = 'admin'
         i = request.find('\n')
@@ -183,6 +198,7 @@ class hotspot:
         
         return returnPage
 
+    # This method parses the form input values from the web page when the user submits the form
     def parseAdminSettings(self,request):
         print("parseAdminSettings()")
         conf = config.Config("")
@@ -210,6 +226,7 @@ class hotspot:
                 conf.write('sleep',"{0:04}".format(s[0]+s[1]))
         self._writeSecrets(self.ssid,self.pwd)
     
+    # This method sends the reply back to the user's web browser
     def sendreply(self,conn, pagebuffer):
         print("sendreply(conn={0})".format(conn))
         response_headers = {
@@ -230,6 +247,7 @@ class hotspot:
         conn.send(b'\n') # to separate headers from body
         conn.send(pagebuffer.encode())
 
+    # This method connects the PICO W to the user's wifi network
     def connectWifi(self):
         wifi = network.WLAN(network.STA_IF)
         wifi.active(True)
@@ -257,6 +275,11 @@ class hotspot:
         machine.reset()
         return False
 
+    # This method starts the hotspot and renders the admin web page
+    # The admin web page allows the user to set the wifi ssid and password,
+    # the time format, the wake and sleep times, the temperature format,
+    # and the temperature and humidity. Note the display doesn't work until
+    # the user sets the wifi ssid and password
     def connectAdmin(self, display):
         print('Clock Hotspot is starting')
         evalResponse = True

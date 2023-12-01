@@ -1,5 +1,8 @@
 # This file is saved as main.py and uploaded onto the Pico W display controller
 # This is the main entry point to the controller for the Kinetic Display
+# All the files under the common folder are shared between the controller and the
+# digit controllers.  The files under the controller folder are specific to the
+# controller and the files under the digit folder are specific to the digit controllers.
 
 import kineticDisplay
 import time
@@ -7,6 +10,13 @@ import config
 from timeEnum import timeEnum
 from scheduler import schedule, scheduleEnum
 
+# Main entry point for the controller
+# This is the main loop that runs the display
+# It is responsible for checking the time and updating the display
+# It is also responsible for checking the state of the switch and the time, 
+# putting the display into hybernation mode, checking the schedule and updating the display
+# Note the code makes heavy use of the config file to store and retrieve state information
+# in the event there is an unexpected power loss
 def main():
     conf = config.Config("config.json")
     display = kineticDisplay.kineticDisplay(conf)
