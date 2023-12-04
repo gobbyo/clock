@@ -3,9 +3,12 @@ import network
 import urequests
 import json
 import time
-import machine
 
 externalIPAddressAPI=const("http://api.ipify.org")
+
+# This class is used to sync the RTC with the timeapi.io service
+# It is also used to obtain the external IP address of the device
+# in order to determine the timezone of the device
 class syncRTC:
 
     def __init__(self):
@@ -50,6 +53,7 @@ class syncRTC:
         finally:
             pass
 
+    # This method is used to connect to the user's WiFi network
     def connectWiFi(self, ssid, pwd):
         try:
             wlan = network.WLAN(network.STA_IF)

@@ -1,3 +1,7 @@
+# Filename: picowifi.py
+# Author: Jeff Beman
+# Date: summer 2023
+
 import usocket as socket        #importing socket
 import socket
 import network            #importing network
@@ -8,10 +12,10 @@ import config
 import machine
 import secrets
 
-# The purpose of this class is to bootstrap the PICO W connectivity by and setting the wifi ssid and password
+# The purpose of this class is to bootstrap the PICO W connectivity to the user's wifi network.
 # This class renders administrative web pages to allow the user to set various settings for the main display controller:
 # the wifi ssid and password, the time format, the wake and sleep times, the temperature format, and the temperature and humidity
-# This class also renders web pages to allow the user to modify the extend and retract angles for each digit.
+# This class also renders web pages to allow the user to modify the extend and retract angles for each digit controller.
 # Note the static ip address is necessary to allow the user to connect to the PICO W when it is in access point mode
 class hotspot:
     def __init__(self,ssid,password):

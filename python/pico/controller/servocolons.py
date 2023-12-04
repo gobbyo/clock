@@ -1,12 +1,19 @@
+# Filename: servocolons.py
+# Author: Jeff Beman
+# Date: summer 2023
+
 from machine import Pin
 from servo import sg90
 import config
 import time
 
+# The servoColonsDisplay class is used by the main Pico W to control 
+# the colons on the kinetic display
 class servoColonsDisplay:
     _segpins = [2,3] # upper, lower
     _switchpins = [9,10] #upper, lower
     _ledpins = [16,17] #upper, lower
+    #TODO: make the extend and retract angles configurable
     _extendAngles = [20,20]
     _retractAngles = [110,110]
     _rateofmovement = 3 #degrees
@@ -42,6 +49,10 @@ class servoColonsDisplay:
             i += 1
         print("servoColonsDisplay destructor")
 
+    # This method is used to extend the colons
+    # The colons are extended one segment at a time
+    # Note that the configuration file is used to store the state of the colons
+    # in the event there is an unexpected power loss
     def extend(self, upper, lower):
         colonstate = self._config.read("colonstate")
         print("extend colons, colonstate={0}".format(colonstate))
@@ -57,6 +68,10 @@ class servoColonsDisplay:
                     colonstate[i] = True
         self._config.write("colonstate",colonstate)
 
+    # This method is used to retract the colons
+    # The colons are retracted one segment at a time
+    # Note that the configuration file is used to store the state of the colons
+    # in the event there is an unexpected power loss
     def retract(self, upper, lower):
         colonstate = self._config.read("colonstate")
         print("retract colons, colonstate={0}".format(colonstate))

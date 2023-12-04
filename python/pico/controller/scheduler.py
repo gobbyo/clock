@@ -1,3 +1,7 @@
+# Purpose: Scheduler class for the Kinetic Display
+# Author:  Jeff Beman
+# Date:    summer 2023
+
 class scheduleEnum():
     time = 0
     date = 1
@@ -7,6 +11,12 @@ class scheduleEnum():
     updateIndoor = 5
     updateOutdoor = 6
 
+# The scheduler class is used to determine what to display and when to update the display
+# based on the current time.  The scheduler is initialized with a list of 60 elements, one
+# for each second in a minute. Time, Date, indoor temp, outdoor temp, and humidity are
+# displayed for a set number of seconds.  The scheduler is also initialized with a list of
+# 60 elements, one for each minute in an hour.  The clock is updated every hour, the indoor
+# temp is updated every 15 minutes, and the outdoor temp is updated every 6 minutes.
 class schedule():
     secondsSchedule = []
     #TODO: make this list configurable
@@ -28,7 +38,9 @@ class schedule():
         
     def __del__(self):
         pass
-
+    
+    # Initialize the seconds schedule list.  This list is used to determine what to display
+    # for each second in a minute.
     def initSecondSchedule(self):
         self.secondsSchedule.clear()
         for s in range(60):
@@ -43,6 +55,8 @@ class schedule():
             if s >= self.displayLastTime[1] and s <= self.displayLastTime[2]:
                 self.secondsSchedule.append(self.displayTime[0])
 
+    # Initialize the minutes schedule list. This list is used to determine when to update
+    # the clock and the indoor and outdoor temp and humidity.
     def initMinuteSchedule(self):
         for i in range(60):
             self.minutesSchedule.append(-1)

@@ -1,3 +1,7 @@
+# Filename: kineticDisplay.py
+# Author: Jeff Beman
+# Date: summer 2023
+
 import syncRTC
 import picowifi
 import machine

@@ -6,7 +6,7 @@ def main():
     try:
         servo.move(10)
         time.sleep(1)
-        servo.move(100)
+        servo.move(105)
         time.sleep(1)
         servo.move(0)
         time.sleep(1)

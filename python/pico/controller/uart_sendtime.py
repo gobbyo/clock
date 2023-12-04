@@ -1,3 +1,6 @@
+# Filename: main.py
+# Author: Jeff Beman
+# Date: summer 2023
 # This file is saved as main.py and uploaded onto the Pico W display controller
 # This is the main entry point to the controller for the Kinetic Display
 # All the files under the common folder are shared between the controller and the
