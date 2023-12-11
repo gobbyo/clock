@@ -4,9 +4,13 @@ The wiki contains all the documentation to get started.
 
 The display is a digital clock, date, indoor and outdoor temperature and humidity display. It has a white face and numbers that light when extended. The numbers are made up of segments that extend or retract to display time, date, temperature, and humidity. The display has four digits numbered 0 through 3 with a colon between digit 1 and 2. The colon is made up of two segments, an upper and a lower, which are retracted or extended for time, date, indoor or outdoor temperature and humidity.
 
+<video width="320" height="240" controls>
+    <source src="https://raw.githubusercontent.com/wiki/gobbyo/clock/media/bluekineticdisplay.mp4" type="video/mp4">
+</video>
+
 Video of the display is located here: https://youtu.be/vFLpjOTYWNc
 
-You can also view the link to the local version of the ![Kinetic Display Video]
+<!-- You can also view the link to the local version of the ![Kinetic Display Video] -->
 
 ![displayelements]
 
