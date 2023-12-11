@@ -51,6 +51,7 @@ def txextend(digit,uart,digitNumber):
         i = int(angle)
         b = bytearray('{0}{1}{2}{3:03}'.format(digitNumber, uartCommandEnum.txextend, segment,i), 'utf-8')
         uart.write(b)
+        print(b)
         time.sleep(.1)
         segment += 1
 
@@ -62,6 +63,7 @@ def txretract(digit,uart,digitNumber):
         i = int(angle)
         b = bytearray('{0}{1}{2}{3:03}'.format(digitNumber, uartCommandEnum.txretract, segment,i), 'utf-8')
         uart.write(b)
+        print(b)
         time.sleep(.1)
         segment += 1
 
