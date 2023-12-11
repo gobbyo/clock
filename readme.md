@@ -2,11 +2,11 @@
 
 The wiki contains all the documentation to get started.
 
+The display is a digital clock, date, indoor and outdoor temperature and humidity display. It has a white face and numbers that light when extended. The numbers are made up of segments that extend or retract to display time, date, temperature, and humidity. The display has four digits numbered 0 through 3 with a colon between digit 1 and 2. The colon is made up of two segments, an upper and a lower, which are retracted or extended for time, date, indoor or outdoor temperature and humidity.
+
 Video of the display is located here: https://youtu.be/vFLpjOTYWNc
 
 You can also view the link to the local version of the [Kinetic Display Video](media/bluekineticdisplay.mp4)
-
-The display is a digital clock, date, indoor and outdoor temperature and humidity display. It has a white face and numbers that light when extended. The numbers are made up of segments that extend or retract to display time, date, temperature, and humidity. The display has four digits numbered 0 through 3 with a colon between digit 1 and 2. The colon is made up of two segments, an upper and a lower, which are retracted or extended for time, date, indoor or outdoor temperature and humidity.
 
 ![displayelements]
 
@@ -15,6 +15,7 @@ The display is a digital clock, date, indoor and outdoor temperature and humidit
 When configured and running the display rotates time, date, temperature, and humidity each minute.
 
 ### Time
+
 The first and last display each minute is time (12 or 24 hour).
 
 ![illustration-time]
@@ -52,7 +53,9 @@ Indoor and outdoor humidity is the fourth display each minute.  Indoor and outdo
 **Displays for 10 seconds** from 35 to 45 seconds.
 
 Like temperature, the INTERIOR humidity displays when the UPPER colon is extended and the lower retracted.  The EXTERIOR humidity displays when the LOWER colon is extended and the upper retracted.  This example shows the OUTDOOR humidity as 93%.
+
 <!-- images -->
+
 [displayelements]: https://raw.githubusercontent.com/wiki/gobbyo/clock/media/illustration-display-elements.png
 [displayback]: media/illustration-back.png
 [illustration-time]: https://raw.githubusercontent.com/wiki/gobbyo/clock/media/illustration-time.png
