@@ -6,7 +6,7 @@ The display is a digital clock, date, indoor and outdoor temperature and humidit
 
 Video of the display is located here: https://youtu.be/vFLpjOTYWNc
 
-You can also view the link to the local version of the [Kinetic Display Video](media/bluekineticdisplay.mp4)
+You can also view the link to the local version of the ![Kinetic Display Video]
 
 ![displayelements]
 
@@ -62,3 +62,4 @@ Like temperature, the INTERIOR humidity displays when the UPPER colon is extende
 [illustration-date]: https://raw.githubusercontent.com/wiki/gobbyo/clock/media/illustration-date.png
 [illustration-temp]: https://raw.githubusercontent.com/wiki/gobbyo/clock/media/illustration-temp.png
 [illustration-humid]: https://raw.githubusercontent.com/wiki/gobbyo/clock/media/illustration-humid.png
+[Kinetic Display Video]: https://raw.githubusercontent.com/wiki/gobbyo/clock/media/bluekineticdisplay.mp4
