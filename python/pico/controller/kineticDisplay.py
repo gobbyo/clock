@@ -143,7 +143,7 @@ class kineticDisplay():
 
         return angles
 
-    # This method is retrieves the retract angle configuration values for the target digit (0-3).
+    # This method retrieves the retract angle configuration values for the target digit (0-3).
     # It sends a command to the digit controller to retrieve the retract angles for the target digit.
     # It then enters a loop where it waits for the digit controller to send the angles back via UART.
     # Once the angles are received, they are appended to a list. The loop continues until 7 angles are received.
